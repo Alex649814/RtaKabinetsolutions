@@ -1,0 +1,21 @@
+# dependencias
+node_modules/
+
+# archivos de producción
+build/
+dist/
+
+# variables de entorno
+.env
+.env.* 
+
+# archivos de log
+*.log
+
+# configuraciones locales
+.vscode/
+*.code-workspace
+
+# sistema operativo
+.DS_Store
+Thumbs.db
