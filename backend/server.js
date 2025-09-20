@@ -48,7 +48,7 @@ app.use('/api', routes);  // aquí ya se incluye /products desde index.js
 app.use('/uploads', express.static(path.join(__dirname, 'api', 'uploads')));
 
 // Puerto
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;  // Usar el nuevo puerto interno
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
