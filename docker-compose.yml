@@ -19,6 +19,16 @@ services:
       - "3001:5000"
     depends_on:
       - db
+    environment:  # <-- agrega esto
+      DB_HOST: db
+      DB_USER: user
+      DB_PASS: password
+      DB_NAME: customcarpent
+      DB_PORT: 3306
+      EMAIL_USER: alexholguinmartinez22@gmail.com
+      EMAIL_PASS: ehyxjvvhlpmqjctg
+      EMAIL_RECEIVER: Carpentry.ido@gmail.com
+      JWT_SECRET: 1234abcd5678efgh
     restart: unless-stopped
 
   frontend:
