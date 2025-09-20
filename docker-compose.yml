@@ -12,13 +12,13 @@ services:
       - db_data:/var/lib/mysql
 
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
-    ports:
-      - "3001:3000"
-    depends_on:
-      - db
+  build:
+    context: .
+    dockerfile: Dockerfile.backend
+  ports:
+    - "3001:5000"  # Cambiamos el puerto interno también a 5000
+  depends_on:
+    - db
     restart: unless-stopped
 
   frontend:
