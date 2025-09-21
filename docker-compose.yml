@@ -5,37 +5,35 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
+    # Variables NO sensibles aquí; lo sensible va en Dokploy → Environment
     environment:
-      DB_HOST: db
-      DB_USER: user
-      DB_PASS: password
-      DB_NAME: customcarpent
-      DB_PORT: 3306
-      DATABASE_URL: mysql://user:password@db:3306/customcarpent
       NODE_ENV: production
       PORT: 3000
+      # CORS (dominios del front)
       FRONTEND_URL: https://rtakabinetssolutions.com
       FRONTEND_URL_WWW: https://www.rtakabinetssolutions.com
-      EMAIL_USER: alexholguinmartinez22@gmail.com
-      EMAIL_PASS: ehyxjvvhlpmqjctg
-      EMAIL_RECEIVER: Carpentry.ido@gmail.com
-      JWT_SECRET: 1234abcd5678efgh
+
     restart: unless-stopped
     networks:
       - shared_net
+      - dokploy-network
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
       args:
+       
         VITE_API_URL: "https://api.rtakabinetssolutions.com"
     depends_on:
       - backend
     restart: unless-stopped
     networks:
       - shared_net
+      - dokploy-network
 
 networks:
   shared_net:
-    external: true
+    external: true          
+  dokploy-network:
+    external: true          
