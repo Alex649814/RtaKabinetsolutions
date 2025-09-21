@@ -6,30 +6,20 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     environment:
-      # --- MySQL (granular, tal como usa tu código con mysql2/promise) ---
       DB_HOST: db
       DB_USER: user
       DB_PASS: password
       DB_NAME: customcarpent
       DB_PORT: 3306
-
-      # --- (Opcional) URL completa por si en el futuro usas un ORM que la pida ---
       DATABASE_URL: mysql://user:password@db:3306/customcarpent
-
-      # --- Backend / entorno ---
-      PORT: 3000                  # interno del contenedor (tu server respeta process.env.PORT)
       NODE_ENV: production
-      CORS_ORIGIN: https://rtakabinetssolutions.com
-
-      # --- Correo (App Password de Gmail) ---
+      PORT: 3000
+      FRONTEND_URL: https://rtakabinetssolutions.com
+      FRONTEND_URL_WWW: https://www.rtakabinetssolutions.com
       EMAIL_USER: alexholguinmartinez22@gmail.com
       EMAIL_PASS: ehyxjvvhlpmqjctg
       EMAIL_RECEIVER: Carpentry.ido@gmail.com
-
-      # --- JWT ---
       JWT_SECRET: 1234abcd5678efgh
-    ports:
-      - "3001:3000"               # host:container (3000 del host suele estar ocupado por Dokploy)
     restart: unless-stopped
     networks:
       - shared_net
@@ -37,12 +27,9 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile.frontend  # cambia a Dockerfile.front si ese es tu nombre
+      dockerfile: Dockerfile.frontend
       args:
-        # Se incrusta en el bundle de Vite durante el build
         VITE_API_URL: "https://api.rtakabinetssolutions.com"
-    ports:
-      - "80:80"
     depends_on:
       - backend
     restart: unless-stopped
