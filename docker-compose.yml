@@ -1,45 +1,54 @@
-services:
-  db:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: customcarpent
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-    ports:
-      - "3306:3306"
-    volumes:
-      - db_data:/var/lib/mysql
+version: "3.9"
 
+services:
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
-    ports:
-      - "3001:5000"
-    depends_on:
-      - db
-    environment:  # <-- agrega esto
+    environment:
+      # --- MySQL (granular, tal como usa tu código con mysql2/promise) ---
       DB_HOST: db
       DB_USER: user
       DB_PASS: password
       DB_NAME: customcarpent
       DB_PORT: 3306
+
+      # --- (Opcional) URL completa por si en el futuro usas un ORM que la pida ---
+      DATABASE_URL: mysql://user:password@db:3306/customcarpent
+
+      # --- Backend / entorno ---
+      PORT: 3000                  # interno del contenedor (tu server respeta process.env.PORT)
+      NODE_ENV: production
+      CORS_ORIGIN: https://rtakabinetssolutions.com
+
+      # --- Correo (App Password de Gmail) ---
       EMAIL_USER: alexholguinmartinez22@gmail.com
       EMAIL_PASS: ehyxjvvhlpmqjctg
       EMAIL_RECEIVER: Carpentry.ido@gmail.com
+
+      # --- JWT ---
       JWT_SECRET: 1234abcd5678efgh
+    ports:
+      - "3001:3000"               # host:container (3000 del host suele estar ocupado por Dokploy)
     restart: unless-stopped
+    networks:
+      - shared_net
 
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile.frontend
+      dockerfile: Dockerfile.frontend  # cambia a Dockerfile.front si ese es tu nombre
+      args:
+        # Se incrusta en el bundle de Vite durante el build
+        VITE_API_URL: "https://api.rtakabinetssolutions.com"
     ports:
       - "80:80"
     depends_on:
       - backend
     restart: unless-stopped
+    networks:
+      - shared_net
 
-volumes:
-  db_data:
+networks:
+  shared_net:
+    external: true

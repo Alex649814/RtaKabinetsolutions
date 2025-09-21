@@ -6,49 +6,69 @@ import routes from './api/index.js';
 import optionsRoutes from './api/routes/optionsRoutes.js';
 import productVariantRoutes from './api/routes/productVariantRoutes.js';
 import { fileURLToPath } from 'url';
-import authRoutes from './api/routes/authRoutes.js'
+import authRoutes from './api/routes/authRoutes.js';
+
 dotenv.config();
 const app = express();
 
-// Convertir __filename y __dirname
+// __dirname ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// --- CORS ---
+const isProd = process.env.NODE_ENV === 'production';
+
+// Puedes definir una lista por coma (opcional) ej: "https://rtakabinetssolutions.com,https://www.rtakabinetssolutions.com"
+const fromList = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
 const allowedOrigins = [
-  process.env.FRONTEND_URL,                      // p.ej. https://dominio.com
-  process.env.FRONTEND_URL_WWW,                  // p.ej. https://www.dominio.com
-  'http://localhost:5173',                       // Vite dev
-  'http://127.0.0.1:5173'
+  process.env.FRONTEND_URL,          // https://rtakabinetssolutions.com
+  process.env.FRONTEND_URL_WWW,      // https://www.rtakabinetssolutions.com
+  ...fromList,
+  ...(isProd ? [] : ['http://localhost:5173', 'http://127.0.0.1:5173'])
 ].filter(Boolean);
 
 const corsOptions = {
   origin(origin, cb) {
-    // permitir peticiones de herramientas sin 'origin' (curl/healthchecks) y de orígenes permitidos
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    return cb(new Error(`CORS bloqueado para: ${origin}`));
+    if (!origin) return cb(null, true);                 // curl/Postman/healthchecks
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error('CORS_NOT_ALLOWED'));
   },
   methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization'],
   credentials: true,
 };
 
-// Middlewares
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // preflight
+
+// Body parsers
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Rutas
 app.use('/api', authRoutes);
 app.use('/api/options', optionsRoutes);
-app.use('/api/product_variants', productVariantRoutes);  // aquí está bien
-app.use('/api', routes);  // aquí ya se incluye /products desde index.js
+app.use('/api/product_variants', productVariantRoutes);
+app.use('/api', routes);
+
+// Healthcheck
+app.get('/health', (req, res) => res.status(200).json({ ok: true }));
 
 // Archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'api', 'uploads')));
 
-// Puerto
-const PORT = process.env.PORT || 5000;  // Usar el nuevo puerto interno
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Server running on port ${PORT}`);
+// Manejo de error CORS (responde 403 en lugar de crash)
+app.use((err, req, res, next) => {
+  if (err && err.message === 'CORS_NOT_ALLOWED') {
+    return res.status(403).json({ error: 'CORS blocked', origin: req.headers.origin });
+  }
+  next(err);
 });
+
+// Puerto
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => console.log(`✅ Server running on port ${PORT}`));
