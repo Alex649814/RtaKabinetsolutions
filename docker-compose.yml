@@ -5,15 +5,20 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
-    # Variables NO sensibles aquí; lo sensible va en Dokploy → Environment
+    # ⬇️ NO duplices aquí DB_* si ya viven en Dokploy (se inyectan en runtime)
     environment:
       NODE_ENV: production
       PORT: 3000
-      # CORS (dominios del front)
+      # Dominios permitidos de CORS para tu API
       FRONTEND_URL: https://rtakabinetssolutions.com
       FRONTEND_URL_WWW: https://www.rtakabinetssolutions.com
-
+      # (Opcional) Si tu código soporta forzar IPv4 para evitar ::1
+      # DB_ADDRESS_FAMILY: "4"
     restart: unless-stopped
+    # Si Dokploy pone reverse proxy, normalmente NO publiques puertos;
+    # si necesitas pruebas locales, puedes descomentar:
+    # ports:
+    #   - "3000:3000"
     networks:
       - shared_net
       - dokploy-network
@@ -23,17 +28,21 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
       args:
-       
+        # URL pública de tu API
         VITE_API_URL: "https://api.rtakabinetssolutions.com"
-    depends_on:
-      - backend
+    environment:
+      NODE_ENV: production
     restart: unless-stopped
+    # Si sirves con Nginx y Dokploy hace el proxy, no abras puertos.
+    # ports:
+    #   - "80:80"
     networks:
       - shared_net
       - dokploy-network
 
 networks:
+  # Ambas redes como externas (ya creadas por Dokploy / otro stack)
   shared_net:
-    external: true          
+    external: true
   dokploy-network:
-    external: true          
+    external: true
