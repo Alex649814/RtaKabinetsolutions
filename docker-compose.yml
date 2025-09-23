@@ -15,6 +15,7 @@ services:
       DB_NAME: customcarpent
       DB_USER: root
       DB_PASS: Pa12724110$
+      JWT_SECRET: 1234abcd5678efgh
       DB_ADDRESS_FAMILY: "4"
     restart: unless-stopped
 
