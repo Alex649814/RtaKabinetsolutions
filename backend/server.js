@@ -24,18 +24,16 @@ const fromList = (process.env.CORS_ORIGIN || '')
   .map(s => s.trim())
   .filter(Boolean);
 
-const allowedOrigins = [
-  process.env.FRONTEND_URL,          // viejo root
-  process.env.FRONTEND_URL_WWW,      // viejo www
-  process.env.FRONTEND_URL_NEW,      // nuevo root
-  process.env.FRONTEND_URL_NEW_WWW,  // nuevo www
-  ...fromList,
-  ...(isProd ? [] : ['http://localhost:5173', 'http://127.0.0.1:5173'])
-].filter(Boolean);
+const allowedOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+console.log("✅ Allowed Origins:", allowedOrigins);
 
 const corsOptions = {
   origin(origin, cb) {
-    if (!origin) return cb(null, true);                 // curl/Postman/healthchecks
+    if (!origin) return cb(null, true); // curl/Postman
     if (allowedOrigins.includes(origin)) return cb(null, true);
     return cb(new Error('CORS_NOT_ALLOWED'));
   },
