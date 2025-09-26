@@ -3,11 +3,11 @@ import fs from 'fs';
 import path from 'path';
 
 export const saveCarousel = async (req, res) => {
-    const { pageName } = req.params;
-    const { title } = req.body;
-    const files = req.files;
-    
-     try {
+  const { pageName } = req.params;
+  const { title } = req.body;
+  const files = req.files;
+
+  try {
     // 1. Guardar el título (una sola entrada con title)
     if (title) {
       const [existingTitle] = await db.query(
@@ -48,13 +48,13 @@ export const saveCarousel = async (req, res) => {
     }
 
     res.status(200).json({ message: 'Carousel updated' });
-        } catch (error) {
-            console.error('❌ Error en saveCarousel:', error);
-            res.status(500).json({ error: error.message });
-        }
-    };
+  } catch (error) {
+    console.error('❌ Error en saveCarousel:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
 
-  export const getCarousel = async (req, res) => {
+export const getCarousel = async (req, res) => {
   const { pageName } = req.params;
 
   try {
@@ -64,11 +64,13 @@ export const saveCarousel = async (req, res) => {
     );
 
     const titleEntry = rows.find(row => row.title);
-    const images = rows.filter(row => row.image_path)
-    .map(img => ({
-       id: img.id,  // ✅ Esto es lo que faltaba
-        path: `https://${req.get('host')}${img.image_path}`
-    }));
+    const images = rows
+      .filter(row => row.image_path)
+      .map(img => ({
+        id: img.id,
+        // 🔒 Forzamos siempre HTTPS en API
+        path: `https://api.rtakabinetsolutions.com${img.image_path}`
+      }));
 
     const data = {
       title: titleEntry?.title || '',
@@ -76,11 +78,11 @@ export const saveCarousel = async (req, res) => {
     };
 
     res.json(data);
-    } catch (err) {
-        console.error('❌ Error al obtener carousel:', err);
-        res.status(500).json({ error: err.message });
-    }
-}
+  } catch (err) {
+    console.error('❌ Error al obtener carousel:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
 
 export const deleteCarouselImage = async (req, res) => {
   const { id } = req.params;
