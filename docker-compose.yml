@@ -24,7 +24,7 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
       args:
-        VITE_API_URL: "https://api.rtakabinetsolutios.com"
+        VITE_API_URL: "https://api.rtakabinetsolutions.com"
     environment:
       NODE_ENV: production
     restart: unless-stopped
