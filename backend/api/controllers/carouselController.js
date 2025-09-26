@@ -67,7 +67,7 @@ export const saveCarousel = async (req, res) => {
     const images = rows.filter(row => row.image_path)
     .map(img => ({
        id: img.id,  // ✅ Esto es lo que faltaba
-        path: `${req.protocol}://${req.get('host')}${img.image_path}`
+        path: `https://${req.get('host')}${img.image_path}`
     }));
 
     const data = {
