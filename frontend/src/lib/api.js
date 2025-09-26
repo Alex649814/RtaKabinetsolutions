@@ -8,9 +8,16 @@ export const API_URL =
 
 export function toAbsoluteUrl(path) {
   if (!path) return '';
-  // Si ya es absoluta (http/https), úsala tal cual
-  if (/^https?:\/\//i.test(path)) return path;
-  // Normaliza las barras
-  if (path.startsWith('/')) return `${API_URL}${path}`;
-  return `${API_URL}/${path}`;
+  
+  // Si ya es absoluta (http/https), úsala pero forzamos https si venía como http
+  if (/^https?:\/\//i.test(path)) {
+    return path.replace(/^http:\/\//i, 'https://');
+  }
+
+  // Normaliza las barras y fuerza https
+  const url = path.startsWith('/')
+    ? `${API_URL}${path}`
+    : `${API_URL}/${path}`;
+
+  return url.replace(/^http:\/\//i, 'https://');
 }
