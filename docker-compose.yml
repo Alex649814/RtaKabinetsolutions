@@ -22,6 +22,8 @@ services:
       DB_PASS: Pa12724110$
       DB_ADDRESS_FAMILY: "4"
 
+      CORS_ORIGIN: https://rtakabinetsolutions.com,https://www.rtakabinetsolutions.com,https://rtakabinetssolutions.com,https://www.rtakabinetssolutions.com
+
       # Seguridad
       JWT_SECRET: 1234abcd5678efgh
 
