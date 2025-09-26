@@ -8,10 +8,13 @@ services:
       - "--providers.docker=true"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      # Configuración de Let's Encrypt
+      # Fuerza redirección a HTTPS
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      # Let's Encrypt
       - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.myresolver.acme.email= Carpentry.ido@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.email=Carpentry.ido@gmail.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
@@ -40,12 +43,11 @@ services:
       CORS_ORIGIN: https://rtakabinetsolutions.com,https://www.rtakabinetsolutions.com,https://rtakabinetssolutions.com,https://www.rtakabinetssolutions.com
     restart: unless-stopped
     labels:
-      # Middleware para redirigir dominio viejo -> nuevo
+      # Redirect dominio viejo -> nuevo
       - "traefik.http.middlewares.redirect-rta.redirectregex.regex=^https?://(www\\.)?rtakabinetssolutions\\.com(.*)"
       - "traefik.http.middlewares.redirect-rta.redirectregex.replacement=https://rtakabinetsolutions.com$2"
       - "traefik.http.middlewares.redirect-rta.redirectregex.permanent=true"
 
-      # Router que atrapa el dominio viejo y aplica la redirección
       - "traefik.http.routers.redirect-rta.rule=Host(`rtakabinetssolutions.com`,`www.rtakabinetssolutions.com`)"
       - "traefik.http.routers.redirect-rta.entrypoints=web,websecure"
       - "traefik.http.routers.redirect-rta.tls=true"
@@ -53,9 +55,9 @@ services:
       - "traefik.http.routers.redirect-rta.middlewares=redirect-rta"
       - "traefik.http.routers.redirect-rta.priority=1000"
 
-      # Router backend API
+      # Router backend
       - "traefik.http.routers.backend.rule=Host(`api.rtakabinetsolutions.com`)"
-      - "traefik.http.routers.backend.entrypoints=web,websecure"
+      - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
 
   frontend:
@@ -70,5 +72,9 @@ services:
     labels:
       # Router frontend
       - "traefik.http.routers.frontend.rule=Host(`rtakabinetsolutions.com`,`www.rtakabinetsolutions.com`)"
-      - "traefik.http.routers.frontend.entrypoints=web,websecure"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+
+networks:
+  default:
+    name: rtakabinetsolutions_net
