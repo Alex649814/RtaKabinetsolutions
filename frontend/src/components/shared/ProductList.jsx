@@ -8,7 +8,11 @@ function safeParseJSON(maybeJSON, fallback) {
   const s = maybeJSON.trim();
   if (!s) return fallback;
   if (!s.startsWith("[") && !s.startsWith("{")) return fallback;
-  try { return JSON.parse(s); } catch { return fallback; }
+  try {
+    return JSON.parse(s);
+  } catch {
+    return fallback;
+  }
 }
 
 const ProductList = ({ products = [], onAdd }) => {
@@ -17,7 +21,9 @@ const ProductList = ({ products = [], onAdd }) => {
   const filteredProducts = useMemo(() => {
     if (!Array.isArray(products)) return [];
     const q = String(searchTerm || "").toLowerCase();
-    return products.filter(p => String(p?.name || "").toLowerCase().includes(q));
+    return products.filter((p) =>
+      String(p?.name || "").toLowerCase().includes(q)
+    );
   }, [products, searchTerm]);
 
   return (
@@ -33,29 +39,35 @@ const ProductList = ({ products = [], onAdd }) => {
 
       <div className="grid grid-cols-1 gap-10">
         {filteredProducts.map((product) => {
-          // --- SIZES: array real, JSON string o vacío ---
+          // --- SIZES ---
           let sizes = [];
           if (Array.isArray(product?.sizes)) {
             sizes = product.sizes;
           } else if (typeof product?.sizes === "string") {
             const trimmed = product.sizes.trim();
             sizes = trimmed
-              ? safeParseJSON(trimmed, trimmed.includes(",")
-                  ? trimmed.split(",").map(s => s.trim()).filter(Boolean)
-                  : [trimmed])
+              ? safeParseJSON(
+                  trimmed,
+                  trimmed.includes(",")
+                    ? trimmed.split(",").map((s) => s.trim()).filter(Boolean)
+                    : [trimmed]
+                )
               : [];
           }
 
-          // --- COLORS: array real, JSON string, "red, blue", o vacío ---
+          // --- COLORS ---
           let colors = [];
           if (Array.isArray(product?.colors)) {
             colors = product.colors;
           } else if (typeof product?.colors === "string") {
             const c = product.colors.trim();
             colors = c
-              ? safeParseJSON(c, c.includes(",")
-                  ? c.split(",").map(x => x.trim()).filter(Boolean)
-                  : [c])
+              ? safeParseJSON(
+                  c,
+                  c.includes(",")
+                    ? c.split(",").map((x) => x.trim()).filter(Boolean)
+                    : [c]
+                )
               : [];
           }
 
@@ -66,21 +78,31 @@ const ProductList = ({ products = [], onAdd }) => {
               key={product?.id ?? crypto.randomUUID()}
               className="bg-white rounded-lg shadow-md p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-start"
             >
-              <img
-                src={imgSrc}
-                alt={product?.name || "Product"}
-                className="w-full h-full object-contain"
-                loading="lazy"
-                onError={(e) => { e.currentTarget.src = "/placeholder.png"; }}
-              />
+              {/* 📸 Imagen con altura fija */}
+              <div className="w-full aspect-[4/3] bg-gray-100 flex items-center justify-center rounded-lg overflow-hidden">
+                <img
+                  src={imgSrc}
+                  alt={product?.name || "Product"}
+                  className="w-full h-full object-contain"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.src = "/placeholder.png";
+                  }}
+                />
+              </div>
 
+              {/* 📋 Contenido */}
               <div className="space-y-3">
-                <h2 className="text-2xl font-bold">{product?.name || "Unnamed product"}</h2>
+                <h2 className="text-2xl font-bold">
+                  {product?.name || "Unnamed product"}
+                </h2>
 
                 {!!product?.description && (
                   <div>
                     <h4 className="font-semibold">Description</h4>
-                    <p className="text-gray-700 whitespace-pre-line">{product.description}</p>
+                    <p className="text-gray-700 whitespace-pre-line">
+                      {product.description}
+                    </p>
                   </div>
                 )}
 
@@ -95,7 +117,9 @@ const ProductList = ({ products = [], onAdd }) => {
                         title={String(color).trim()}
                       />
                     ))}
-                    {colors.length === 0 && <span className="text-sm text-gray-500">No colors</span>}
+                    {colors.length === 0 && (
+                      <span className="text-sm text-gray-500">No colors</span>
+                    )}
                   </div>
                 </div>
 
@@ -104,7 +128,9 @@ const ProductList = ({ products = [], onAdd }) => {
                   {sizes.length ? (
                     <ul className="list-disc list-inside text-sm text-gray-800">
                       {sizes.map((size, idx) => (
-                        <li key={`${product?.id}-size-${idx}`}>{String(size)}</li>
+                        <li key={`${product?.id}-size-${idx}`}>
+                          {String(size)}
+                        </li>
                       ))}
                     </ul>
                   ) : (
