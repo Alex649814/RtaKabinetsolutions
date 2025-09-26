@@ -42,3 +42,15 @@ services:
     environment:
       NODE_ENV: production
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      # Redirección de HTTP → HTTPS
+      - "traefik.http.routers.rtakabinetsolutions.entrypoints=web"
+      - "traefik.http.routers.rtakabinetsolutions.rule=Host(`rtakabinetsolutions.com`,`www.rtakabinetsolutions.com`)"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.rtakabinetsolutions.middlewares=redirect-to-https"
+
+      # HTTPS con certificado
+      - "traefik.http.routers.rtakabinetsolutions-secure.entrypoints=websecure"
+      - "traefik.http.routers.rtakabinetsolutions-secure.rule=Host(`rtakabinetsolutions.com`,`www.rtakabinetsolutions.com`)"
+      - "traefik.http.routers.rtakabinetsolutions-secure.tls.certresolver=myresolver"
