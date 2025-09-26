@@ -11,8 +11,8 @@ router.param('pageName', (req, res, next, pageName) => {
   next();
 });
 
-router.post('/page/:pageName', upload.array('images'), saveCarousel);
-router.get('/page/:pageName', getCarousel);
-router.delete('/page/:pageName/:id', deleteCarouselImage);
+router.post('/:pageName', upload.array('images'), saveCarousel);
+router.get('/:pageName', getCarousel);
+router.delete('/:pageName/:id', deleteCarouselImage);
 
 export default router;
