@@ -8,15 +8,26 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      # Dominios frontend
       FRONTEND_URL: https://rtakabinetssolutions.com
       FRONTEND_URL_WWW: https://www.rtakabinetssolutions.com
+      FRONTEND_URL_NEW: https://rtakabinetsolutions.com
+      FRONTEND_URL_NEW_WWW: https://www.rtakabinetsolutions.com
+
+      # Base de datos
       DB_HOST: custom-carpentry-alex-customcarpentry-zsw4oq
       DB_PORT: 3306
       DB_NAME: customcarpent
       DB_USER: root
       DB_PASS: Pa12724110$
-      JWT_SECRET: 1234abcd5678efgh
       DB_ADDRESS_FAMILY: "4"
+
+      # Seguridad
+      JWT_SECRET: 1234abcd5678efgh
+
+      # CORS permitido (lista separada por comas)
+      CORS_ORIGIN: https://rtakabinetsolutions.com,https://www.rtakabinetsolutions.com,https://rtakabinetssolutions.com,https://www.rtakabinetssolutions.com
+
     restart: unless-stopped
     labels:
       # Middleware para redirigir dominio viejo -> nuevo
