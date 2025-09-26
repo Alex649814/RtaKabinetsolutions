@@ -48,11 +48,14 @@ const ProductListModal = ({
             <li key={product.id} className="flex items-center justify-between py-2">
               <div className="flex items-center gap-3">
                 {product.image_path && (
-                  <img
-                    src={toAbsoluteUrl(product.image_path)} 
-                    alt={product.name}
-                    className="w-12 h-12 object-cover rounded border"
-                  />
+                    <div className="w-16 aspect-square flex-shrink-0">
+                      <img
+                        src={toAbsoluteUrl(product.image_path)} 
+                        alt={product.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover rounded border"
+                      />
+                    </div>
                 )}
                 <span>{product.name}</span>
               </div>
