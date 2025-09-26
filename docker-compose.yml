@@ -18,6 +18,19 @@ services:
       JWT_SECRET: 1234abcd5678efgh
       DB_ADDRESS_FAMILY: "4"
     restart: unless-stopped
+    labels:
+      # Middleware para redirigir dominio viejo -> nuevo
+      - "traefik.http.middlewares.redirect-rta.redirectregex.regex=^https?://(www\\.)?rtakabinetssolutions\\.com(.*)"
+      - "traefik.http.middlewares.redirect-rta.redirectregex.replacement=https://rtakabinetsolutions.com$2"
+      - "traefik.http.middlewares.redirect-rta.redirectregex.permanent=true"
+
+      # Router que atrapa el dominio viejo y aplica la redirección
+      - "traefik.http.routers.redirect-rta.rule=Host(`rtakabinetssolutions.com`,`www.rtakabinetssolutions.com`)"
+      - "traefik.http.routers.redirect-rta.entrypoints=web,websecure"
+      - "traefik.http.routers.redirect-rta.tls=true"
+      - "traefik.http.routers.redirect-rta.service=noop@internal"
+      - "traefik.http.routers.redirect-rta.middlewares=redirect-rta"
+      - "traefik.http.routers.redirect-rta.priority=1000"
 
   frontend:
     build:
