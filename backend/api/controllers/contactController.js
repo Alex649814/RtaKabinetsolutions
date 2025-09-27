@@ -22,12 +22,14 @@ export const saveContactForm = async (req, res) => {
 
     // Configurar transporte con nodemailer
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER, // Tu cuenta (por ejemplo, Carpentry.ido@gmail.com)
-        pass: process.env.EMAIL_PASS
-      }
-    });
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+});
 
     // Crear correo
     const mailOptions = {
