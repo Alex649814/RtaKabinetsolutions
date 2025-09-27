@@ -79,17 +79,17 @@ const ProductList = ({ products = [], onAdd }) => {
               className="bg-white rounded-lg shadow-md p-6 grid grid-cols-1 md:grid-cols-2 gap-6 items-start"
             >
               {/* 📸 Imagen con altura fija */}
-              <div className="w-full aspect-[4/3] bg-gray-100 flex items-center justify-center rounded-lg overflow-hidden">
-                <img
-                  src={imgSrc}
-                  alt={product?.name || "Product"}
-                  className="w-full h-full object-contain"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.src = "/placeholder.png";
-                  }}
-                />
-              </div>
+                <div className="w-full aspect-[4/3] bg-white flex items-center justify-center rounded-lg overflow-hidden">
+                  <img
+                    src={imgSrc}
+                    alt={product?.name || "Product"}
+                    className="w-full h-full object-contain"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.png";
+                    }}
+                  />
+                </div>
 
               {/* 📋 Contenido */}
               <div className="space-y-3">
