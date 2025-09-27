@@ -6,10 +6,11 @@ export const saveContactForm = async (req, res) => {
     const { firstName, lastName, email, phone, contactBy, message } = req.body;
 
     // Convertir opciones de contacto a texto
-    const contactByString = [
-      contactBy.phone ? 'phone' : '',
-      contactBy.email ? 'email' : ''
-    ].filter(Boolean).join(', ');
+    const contactByString = contactBy
+  ? [contactBy.phone ? 'phone' : '', contactBy.email ? 'email' : '']
+      .filter(Boolean)
+      .join(', ')
+  : '';
 
     // Guardar en base de datos
     const sql = `
