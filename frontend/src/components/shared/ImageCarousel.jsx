@@ -39,11 +39,15 @@ const ImageCarousel = ({ page }) => {
           className="h-[500px] rounded-xl overflow-hidden shadow-lg transition-all duration-1000"
         >
           {images.map((img, index) => (
-            <div key={img.id} className="w-full aspect-video">
+            <div
+              key={img.id}
+              className="w-full h-[500px] bg-center bg-cover flex items-center justify-center"
+              style={{ backgroundImage: `url(${img.path})` }}
+            >
               <img
                 src={img.path}
                 alt={`Slide-${index}`}
-                className="w-full h-full object-cover"
+                className="max-h-full max-w-full object-contain shadow-xl"
               />
             </div>
           ))}
