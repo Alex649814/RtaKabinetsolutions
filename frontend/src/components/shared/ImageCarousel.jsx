@@ -43,7 +43,7 @@ const ImageCarousel = ({ page }) => {
               <img
                 src={img.path}
                 alt={`Slide-${index}`}
-                className="w-full h-full object-cover transition-opacity duration-700 ease-in-out"
+                className="w-full h-full object-contain bg-black transition-opacity duration-500 ease-in-out"
               />
             </div>
           ))}
