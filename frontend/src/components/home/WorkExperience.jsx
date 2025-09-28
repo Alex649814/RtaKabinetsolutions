@@ -36,10 +36,7 @@ const ExperienceSection = ({ page, customFilter }) => {
             {sectionData?.description || 'Descripción de ejemplo...'}
           </p>
           <div className="mt-10 flex justify-center">
-            <FreeEstimateButton
-              className="py-3 px-8 rounded-xl shadow text-base"
-              color="bg-green-600"
-            />
+
           </div>
         </div>
       </div>

@@ -29,10 +29,6 @@ const WhyChooseUs = ({ page, customFilter }) => {
             {sectionData?.description || 'Descripción por defecto...'}
           </p>
           <div className="mt-6 flex justify-center md:justify-start">
-            <FreeEstimateButton
-              className="py-3 px-8 rounded-xl shadow"
-              color="bg-green-600"
-            />
           </div>
         </div>
         <div className="w-full md:w-1/2">

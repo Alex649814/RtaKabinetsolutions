@@ -40,10 +40,6 @@ const Vision = ({ page, customFilter }) => {
             {sectionData.description}
           </p>
           <div className="mt-8 flex justify-center md:justify-start">
-            <FreeEstimateButton
-              className="py-4 px-8 rounded-xl shadow text-base"
-              color="bg-green-600"
-            />
           </div>
         </div>
 

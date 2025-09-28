@@ -52,10 +52,6 @@ const Mission = ({ page, customFilter }) => {
           <p className="text-lg leading-relaxed">
             {textContent.description}
           </p>
-          <FreeEstimateButton
-            className="py-4 px-8 rounded-xl shadow text-base"
-            color="bg-green-600"
-          />
         </div>
       </div>
     </motion.section>
