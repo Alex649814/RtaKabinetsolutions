@@ -40,22 +40,22 @@ const ImageCarousel = ({ page }) => {
         >
           {images.map((img, index) => (
            <div
-              key={img.id}
-              className="relative w-full h-[500px] flex items-center justify-center overflow-hidden"
-            >
-              {/* Fondo difuminado */}
-              <div
-                className="absolute inset-0 bg-center bg-cover filter blur-2xl scale-110"
-                style={{ backgroundImage: `url(${img.path})` }}
-              ></div>
+            key={img.id}
+            className="relative w-full h-[500px] flex items-center justify-center overflow-hidden bg-black"
+          >
+            {/* Fondo difuminado */}
+            <div
+              className="absolute inset-0 bg-center bg-cover filter blur-2xl scale-110 opacity-70"
+              style={{ backgroundImage: `url(${img.path})` }}
+            ></div>
 
-              {/* Imagen principal */}
-              <img
-                src={img.path}
-                alt={`Slide-${index}`}
-                className="relative z-10 max-h-full max-w-full object-contain shadow-xl rounded"
-              />
-            </div>
+            {/* Imagen principal */}
+            <img
+              src={img.path}
+              alt={`Slide-${index}`}
+              className="relative z-10 max-h-full max-w-full object-contain shadow-xl rounded"
+            />
+          </div>
           ))}
         </Carousel>
       )}
