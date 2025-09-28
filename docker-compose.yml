@@ -18,6 +18,12 @@ services:
       DB_ADDRESS_FAMILY: "4"
       JWT_SECRET: 1234abcd5678efgh
       CORS_ORIGIN: https://rtakabinetsolutions.com,https://www.rtakabinetsolutions.com,https://rtakabinetssolutions.com,https://www.rtakabinetssolutions.com
+
+      # Correo (Nodemailer con Gmail)
+      EMAIL_USER: alexholguinmartinez22@gmail.com
+      EMAIL_PASS: dzvhqkslexowczou
+      EMAIL_RECEIVER: Carpentry.ido@gmail.com
+
     restart: unless-stopped
     labels:
       # Middleware para redirigir dominio viejo -> nuevo
