@@ -125,7 +125,7 @@ const CarouselSection = ({ pageName }) => {
               <img
                 src={img.preview}
                 alt={`preview-${index}`}
-                className="w-full h-32 object-cover rounded"
+                className="w-full h-32 object-contain rounded bg-black"
               />
               <button
                 type="button"
