@@ -408,16 +408,8 @@ const EstimateGeneratorAdmin = () => {
             })}
         </div>
 
-          <ToastContainer
-            position="bottom-right"
-            autoClose={2000}
-            hideProgressBar
-            closeOnClick
-            pauseOnHover={false}
-            pauseOnFocusLoss={false}
-            draggable={false}
-            limit={3}
-          />      
+          
+                
         
         </div>
 
