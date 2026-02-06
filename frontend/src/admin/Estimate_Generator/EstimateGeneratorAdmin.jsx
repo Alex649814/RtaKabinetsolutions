@@ -322,265 +322,265 @@ doc.text("Client", 165, finalY + 17);
   };
 
   return (
-    <>
-      <div className="mt-[90px] px-4"></div>
+  <>
+    <div className="mt-[90px] px-4"></div>
 
-      {/* Filtro */}
-      <div className="max-w-4xl mx-auto mb-6">
-        <input
-          type="text"
-          placeholder="Buscar mueble por nombre..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="w-full border border-gray-300 rounded px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+    {/* Filtro */}
+    <div className="max-w-6xl mx-auto mb-6 px-4">
+      <input
+        type="text"
+        placeholder="Buscar mueble por nombre..."
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        className="w-full border border-gray-300 rounded px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
 
-      {/* Lista de productos */}
-      <div className="max-w-6xl mx-auto py-12 px-4 space-y-12">
-        <h2 className="text-2xl font-semibold mb-4 text-center">📦 Muebles disponibles</h2>
+    {/* ✅ Layout 2 columnas */}
+    <div className="max-w-6xl mx-auto px-4 pb-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-        <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
-          {Object.entries(groupedVariants)
-            .filter(([_, group]) => group.name.toLowerCase().includes(filter.toLowerCase()))
-            .map(([productId, group]) => {
-              const productName = group.name;
-              const groupVariants = group.variants || [];
-              const productImage = groupVariants.find(v => v.image_path)?.image_path;
+        {/* ✅ IZQUIERDA: Productos (ocupa 2 columnas) */}
+        <div className="lg:col-span-2 space-y-6">
+          <h2 className="text-2xl font-semibold text-center">📦 Muebles disponibles</h2>
 
-              const selected = selectedOptions[productId] || {};
-              const selectedVariant = groupVariants.find(
-                v => v.color === selected.color && v.size === selected.size
-              );
+          <div className="flex flex-col gap-6 w-full">
+            {Object.entries(groupedVariants)
+              .filter(([_, group]) => group.name.toLowerCase().includes(filter.toLowerCase()))
+              .map(([productId, group]) => {
+                const productName = group.name;
+                const groupVariants = group.variants || [];
+                const productImage = groupVariants.find(v => v.image_path)?.image_path;
 
-              const availableColors = Array.from(new Set(groupVariants.map(v => v.color)));
-              const availableSizes = Array.from(new Set(groupVariants.map(v => v.size)));
+                const selected = selectedOptions[productId] || {};
+                const selectedVariant = groupVariants.find(
+                  v => v.color === selected.color && v.size === selected.size
+                );
 
-              return (
-                <div
-                  key={productId}
-                  className="flex flex-col md:flex-row border rounded-lg shadow p-4 gap-4"
-                >
-                  {/* Imagen */}
-                  {productImage && (
-                    <div className="w-full md:w-1/2">
-                      <img
-                        src={getImageUrl(productImage)}
-                        alt="Producto"
-                        className="w-full h-full object-cover rounded"
-                        onError={(e) => {
-                          // por si viene una ruta rara, evitamos el ícono roto
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
+                const availableColors = Array.from(new Set(groupVariants.map(v => v.color)));
+                const availableSizes = Array.from(new Set(groupVariants.map(v => v.size)));
 
-                  {/* Info */}
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div>
-                      <h3 className="text-2xl font-bold">{productName}</h3>
-                      <p className="text-gray-700 mb-2">
-                        <strong>Descripción: </strong>{groupVariants[0]?.description}
-                      </p>
+                return (
+                  <div
+                    key={productId}
+                    className="flex flex-col md:flex-row border rounded-lg shadow p-4 gap-4 bg-white"
+                  >
+                    {/* Imagen */}
+                    {productImage && (
+                      <div className="w-full md:w-1/2">
+                        <img
+                          src={getImageUrl(productImage)}
+                          alt="Producto"
+                          className="w-full h-full object-cover rounded"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      </div>
+                    )}
 
-                      <div className="mb-2">
-                        <p className="font-medium">Colores:</p>
-                        <div className="flex gap-3 flex-wrap">
-                          {availableColors.map(color => {
-                            const colorHex = groupVariants.find(v => v.color === color)?.colorHex;
-                            const isSelected = selected.color === color;
-                            return (
-                              <div
-                                key={color}
-                                onClick={() => handleOptionChange(productId, 'color', color)}
-                                className="cursor-pointer"
-                              >
-                                <span
-                                  className={`block w-6 h-6 rounded border-2 ${
-                                    isSelected ? 'ring-2 ring-blue-500' : 'border-gray-300'
-                                  }`}
-                                  style={{ backgroundColor: colorHex }}
-                                  title={color}
-                                ></span>
-                                <span className="text-xs">{color}</span>
-                              </div>
-                            );
-                          })}
+                    {/* Info */}
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div>
+                        <h3 className="text-2xl font-bold">{productName}</h3>
+                        <p className="text-gray-700 mb-2">
+                          <strong>Descripción: </strong>{groupVariants[0]?.description}
+                        </p>
+
+                        <div className="mb-2">
+                          <p className="font-medium">Colores:</p>
+                          <div className="flex gap-3 flex-wrap">
+                            {availableColors.map(color => {
+                              const colorHex = groupVariants.find(v => v.color === color)?.colorHex;
+                              const isSelected = selected.color === color;
+
+                              return (
+                                <div
+                                  key={color}
+                                  onClick={() => handleOptionChange(productId, 'color', color)}
+                                  className="cursor-pointer"
+                                >
+                                  <span
+                                    className={`block w-6 h-6 rounded border-2 ${
+                                      isSelected ? 'ring-2 ring-blue-500' : 'border-gray-300'
+                                    }`}
+                                    style={{ backgroundColor: colorHex }}
+                                    title={color}
+                                  />
+                                  <span className="text-xs">{color}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
+
+                        <div className="mt-2 space-y-1">
+                          {availableSizes.map(size => (
+                            <label key={size} className="flex items-center space-x-2 text-sm">
+                              <input
+                                type="radio"
+                                name={`size-${productId}`}
+                                value={size}
+                                checked={selected.size === size}
+                                onChange={() => handleOptionChange(productId, 'size', size)}
+                              />
+                              <span>{size}</span>
+                            </label>
+                          ))}
+                        </div>
+
+                        <p className="mt-2 font-semibold text-gray-800">
+                          Precio: {selectedVariant ? `$${selectedVariant.price}` : '---'}
+                        </p>
                       </div>
 
-                      <div className="mt-2 space-y-1">
-                        {availableSizes.map(size => (
-                          <label
-                            key={size}
-                            className="flex items-center space-x-2 text-sm"
-                          >
-                            <input
-                              type="radio"
-                              name={`size-${productId}`}
-                              value={size}
-                              checked={selected.size === size}
-                              onChange={() => handleOptionChange(productId, 'size', size)}
-                            />
-                            <span>{size}</span>
-                          </label>
-                        ))}
-                      </div>
-
-                      <p className="mt-2 font-semibold text-gray-800">
-                        Precio: {selectedVariant ? `$${selectedVariant.price}` : '---'}
-                      </p>
+                      <button
+                        onClick={() => handleAdd(productId)}
+                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        Agregar
+                      </button>
                     </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+
+        {/* ✅ DERECHA: Cliente + Presupuesto (sticky) */}
+        <div className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
+
+          {/* Cliente */}
+          <div className="p-4 border rounded shadow bg-white">
+            <h2 className="text-xl font-semibold mb-4 text-center">📇 Información del cliente</h2>
+
+            <div className="grid grid-cols-1 gap-4">
+              <input
+                type="text"
+                placeholder="Nombre del cliente"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                className="border p-2 rounded"
+              />
+              <input
+                type="text"
+                placeholder="Dirección"
+                value={clientAddress}
+                onChange={(e) => setClientAddress(e.target.value)}
+                className="border p-2 rounded"
+              />
+              <input
+                type="text"
+                placeholder="Teléfono"
+                value={clientPhone}
+                onChange={(e) => setClientPhone(e.target.value)}
+                className="border p-2 rounded"
+              />
+              <input
+                type="email"
+                placeholder="Correo electrónico"
+                value={clientEmail}
+                onChange={(e) => setClientEmail(e.target.value)}
+                className="border p-2 rounded"
+              />
+              <textarea
+                placeholder="Notas / condiciones (opcional)..."
+                value={clientNotes}
+                onChange={(e) => setClientNotes(e.target.value)}
+                className="border p-2 rounded h-28 resize-none"
+              />
+            </div>
+          </div>
+
+          {/* Presupuesto */}
+          <div className="p-4 border rounded shadow bg-white">
+            <h2 className="text-xl font-semibold mb-4 text-center">🧾 Presupuesto generado</h2>
+
+            {estimateItems.length === 0 ? (
+              <p className="text-center text-gray-500">No hay productos añadidos aún.</p>
+            ) : (
+              <div className="space-y-4 max-h-[55vh] overflow-auto pr-1">
+                {estimateItems.map((item) => (
+                  <div key={item.id} className="p-3 border rounded">
+                    <p className="font-semibold">{item.name}</p>
+                    <p className="text-sm text-gray-600">{item.description}</p>
+
+                    <div className="flex flex-wrap items-center gap-3 mt-2">
+                      <label className="text-sm">Cantidad:</label>
+                      <input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) =>
+                          dispatch(updateQuantity({ id: item.id, quantity: parseInt(e.target.value) }))
+                        }
+                        className="w-16 p-1 border rounded"
+                      />
+
+                      <label className="text-sm">Precio:</label>
+                      <input
+                        type="number"
+                        value={item.price}
+                        onChange={(e) =>
+                          dispatch(updatePrice({ id: item.id, price: parseFloat(e.target.value) }))
+                        }
+                        className="w-24 p-1 border rounded"
+                      />
+
+                      <span className="ml-auto font-semibold">
+                        ${ (item.quantity * item.price).toFixed(2) }
+                      </span>
+
+                      <button
+                        onClick={() => dispatch(removeFromEstimate(item.id))}
+                        className="px-3 py-1 bg-red-500 text-white rounded"
+                      >
+                        Quitar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="pt-2 border-t text-right">
+                  <h3 className="text-lg font-bold">Total: ${total.toFixed(2)}</h3>
+
+                  <div className="flex gap-2 justify-end mt-2">
+                    <button
+                      onClick={() => {
+                        dispatch(clearEstimate());
+                        setClientName('');
+                        setClientAddress('');
+                        setClientPhone('');
+                        setClientEmail('');
+                        setClientNotes('');
+                      }}
+                      className="px-4 py-2 bg-gray-700 text-white rounded"
+                    >
+                      Limpiar
+                    </button>
 
                     <button
-                      onClick={() => handleAdd(productId)}
-                      className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      onClick={() => {
+                        if (!clientName || !clientAddress || !clientPhone) {
+                          toast.error("Por favor completa el nombre, dirección y teléfono del cliente.", {
+                            position: "bottom-right"
+                          });
+                          return;
+                        }
+                        generateEstimatePDF(estimateItems);
+                      }}
+                      className="px-4 py-2 bg-green-600 text-white rounded"
                     >
-                      Agregar
+                      Descargar PDF
                     </button>
                   </div>
                 </div>
-              );
-            })}
-        </div>
-
-          
-                
-        
-        </div>
-
-      {/* Cliente */}
-      <div className="max-w-4xl mx-auto mt-8 p-4 border rounded shadow">
-        <h2 className="text-xl font-semibold mb-4 text-center">📇 Información del cliente</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            placeholder="Nombre del cliente"
-            value={clientName}
-            onChange={(e) => setClientName(e.target.value)}
-            className="border p-2 rounded"
-          />
-          <input
-            type="text"
-            placeholder="Dirección"
-            value={clientAddress}
-            onChange={(e) => setClientAddress(e.target.value)}
-            className="border p-2 rounded"
-          />
-          <input
-            type="text"
-            placeholder="Teléfono"
-            value={clientPhone}
-            onChange={(e) => setClientPhone(e.target.value)}
-            className="border p-2 rounded"
-          />
-          <input
-            type="email"
-            placeholder="Correo electrónico"
-            value={clientEmail}
-            onChange={(e) => setClientEmail(e.target.value)}
-            className="border p-2 rounded"
-          />
-          <textarea
-            placeholder="Notas / condiciones (opcional)..."
-            value={clientNotes}
-            onChange={(e) => setClientNotes(e.target.value)}
-            className="border p-2 rounded md:col-span-2 h-28 resize-none"
-          />
-        </div>
-      </div>
-
-      {/* Presupuesto */}
-      <div className="max-w-4xl mx-auto mt-10">
-        <h2 className="text-2xl font-semibold mb-4 text-center">🧾 Presupuesto generado</h2>
-
-        {estimateItems.length === 0 ? (
-          <p className="text-center text-gray-500">No hay productos añadidos aún.</p>
-        ) : (
-          <div className="space-y-4">
-            {estimateItems.map((item) => (
-              <div key={item.id} className="p-4 border rounded">
-                <p className="font-semibold">{item.name}</p>
-                <p className="text-sm text-gray-600">{item.description}</p>
-                <div className="flex items-center gap-4 mt-2">
-                  <label>Cantidad:</label>
-                  <input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) =>
-                      dispatch(updateQuantity({
-                        id: item.id,
-                        quantity: parseInt(e.target.value)
-                      }))
-                    }
-                    className="w-16 p-1 border rounded"
-                  />
-
-                  <label>Precio:</label>
-                  <input
-                    type="number"
-                    value={item.price}
-                    onChange={(e) =>
-                      dispatch(updatePrice({
-                        id: item.id,
-                        price: parseFloat(e.target.value)
-                      }))
-                    }
-                    className="w-20 p-1 border rounded"
-                  />
-
-                  <span className="ml-auto font-semibold">
-                    Subtotal: ${(item.quantity * item.price).toFixed(2)}
-                  </span>
-
-                  <button
-                    onClick={() => dispatch(removeFromEstimate(item.id))}
-                    className="px-3 py-1 bg-red-500 text-white rounded"
-                  >
-                    Quitar
-                  </button>
-                </div>
               </div>
-            ))}
-
-            <div className="mt-6 text-right">
-              <h3 className="text-xl font-bold">Total: ${total.toFixed(2)}</h3>
-
-              <button
-                onClick={() => {
-                  dispatch(clearEstimate());
-                  setClientName('');
-                  setClientAddress('');
-                  setClientPhone('');
-                  setClientEmail('');
-                  setClientNotes('');
-                }}
-                className="mt-2 px-4 py-2 bg-gray-700 text-white rounded"
-              >
-                Limpiar
-              </button>
-
-              <button
-                onClick={() => {
-                  if (!clientName || !clientAddress || !clientPhone) {
-                    toast.error("Por favor completa el nombre, dirección y teléfono del cliente.", {
-                      position: "bottom-right"
-                    });
-                    return;
-                  }
-                  generateEstimatePDF(estimateItems);
-                }}
-                className="mt-2 ml-4 px-4 py-2 bg-green-600 text-white rounded"
-              >
-                Descargar PDF
-              </button>
-            </div>
+            )}
           </div>
-        )}
+
+        </div>
       </div>
-    </>
-  );
+    </div>
+  </>
+);
 };
 
 export default EstimateGeneratorAdmin;
