@@ -325,24 +325,22 @@ return (
   <>
     <div className="mt-[90px] px-4"></div>
 
-    {/* Layout principal: izquierda (productos) / derecha (cliente + presupuesto) */}
-    <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-      {/* ✅ IZQUIERDA: Filtro + Lista de productos (2/3) */}
-      <div className="lg:col-span-2">
-        {/* Filtro */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Buscar mueble por nombre..."
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="w-full border border-gray-300 rounded px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        {/* ✅ IZQUIERDA: Filtro + Productos */}
+        <div className="lg:col-span-2">
+          {/* Filtro */}
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="Buscar mueble por nombre..."
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="w-full border border-gray-300 rounded px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-        {/* Lista de productos */}
-        <div className="space-y-6">
           <h2 className="text-2xl font-semibold mb-4 text-center">📦 Muebles disponibles</h2>
 
           <div className="flex flex-col gap-6 w-full">
@@ -394,7 +392,6 @@ return (
                             {availableColors.map(color => {
                               const colorHex = groupVariants.find(v => v.color === color)?.colorHex;
                               const isSelected = selected.color === color;
-
                               return (
                                 <div
                                   key={color}
@@ -417,10 +414,7 @@ return (
 
                         <div className="mt-2 space-y-1">
                           {availableSizes.map(size => (
-                            <label
-                              key={size}
-                              className="flex items-center space-x-2 text-sm"
-                            >
+                            <label key={size} className="flex items-center space-x-2 text-sm">
                               <input
                                 type="radio"
                                 name={`size-${productId}`}
@@ -450,156 +444,158 @@ return (
               })}
           </div>
         </div>
-      </div>
 
-      {/* ✅ DERECHA: Cliente + Presupuesto (sticky con alto de pantalla) */}
-      <div className="lg:col-span-1 lg:sticky lg:top-[96px] lg:h-[calc(100vh-110px)]">
-        <div className="h-full flex flex-col gap-6 overflow-hidden">
+        {/* ✅ DERECHA: Cliente + Presupuesto */}
+        <div className="lg:col-span-1">
+          {/* En desktop: sticky + alto max. En móvil: normal (sin apachurrar). */}
+          <div className="space-y-6 lg:sticky lg:top-[96px] lg:max-h-[calc(100vh-110px)] lg:overflow-hidden">
 
-          {/* Cliente */}
-          <div className="p-4 border rounded shadow bg-white">
-            <h2 className="text-xl font-semibold mb-4 text-center">📇 Información del cliente</h2>
+            {/* Cliente (no se aplasta) */}
+            <div className="p-4 border rounded shadow bg-white lg:shrink-0">
+              <h2 className="text-xl font-semibold mb-4 text-center">📇 Información del cliente</h2>
 
-            <div className="grid grid-cols-1 gap-4">
-              <input
-                type="text"
-                placeholder="Nombre del cliente"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                className="border p-2 rounded"
-              />
-              <input
-                type="text"
-                placeholder="Dirección"
-                value={clientAddress}
-                onChange={(e) => setClientAddress(e.target.value)}
-                className="border p-2 rounded"
-              />
-              <input
-                type="text"
-                placeholder="Teléfono"
-                value={clientPhone}
-                onChange={(e) => setClientPhone(e.target.value)}
-                className="border p-2 rounded"
-              />
-              <input
-                type="email"
-                placeholder="Correo electrónico"
-                value={clientEmail}
-                onChange={(e) => setClientEmail(e.target.value)}
-                className="border p-2 rounded"
-              />
-              <textarea
-                placeholder="Notas / condiciones (opcional)..."
-                value={clientNotes}
-                onChange={(e) => setClientNotes(e.target.value)}
-                className="border p-2 rounded h-28 resize-none"
-              />
+              <div className="grid grid-cols-1 gap-4">
+                <input
+                  type="text"
+                  placeholder="Nombre del cliente"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  className="border p-2 rounded"
+                />
+                <input
+                  type="text"
+                  placeholder="Dirección"
+                  value={clientAddress}
+                  onChange={(e) => setClientAddress(e.target.value)}
+                  className="border p-2 rounded"
+                />
+                <input
+                  type="text"
+                  placeholder="Teléfono"
+                  value={clientPhone}
+                  onChange={(e) => setClientPhone(e.target.value)}
+                  className="border p-2 rounded"
+                />
+                <input
+                  type="email"
+                  placeholder="Correo electrónico"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  className="border p-2 rounded"
+                />
+                <textarea
+                  placeholder="Notas / condiciones (opcional)..."
+                  value={clientNotes}
+                  onChange={(e) => setClientNotes(e.target.value)}
+                  className="border p-2 rounded h-28 resize-none"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Presupuesto */}
-          <div className="p-4 border rounded shadow bg-white flex-1 overflow-hidden flex flex-col">
-            <h2 className="text-xl font-semibold mb-4 text-center">🧾 Presupuesto generado</h2>
+            {/* Presupuesto */}
+            <div className="p-4 border rounded shadow bg-white lg:min-h-0 lg:flex lg:flex-col">
+              <h2 className="text-xl font-semibold mb-4 text-center">🧾 Presupuesto generado</h2>
 
-            {estimateItems.length === 0 ? (
-              <p className="text-center text-gray-500">No hay productos añadidos aún.</p>
-            ) : (
-              <>
-                {/* ✅ SOLO esta parte scrollea */}
-                <div className="flex-1 overflow-auto pr-1 space-y-4">
-                  {estimateItems.map((item) => (
-                    <div key={item.id} className="p-3 border rounded">
-                      <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-gray-600">{item.description}</p>
+              {estimateItems.length === 0 ? (
+                <p className="text-center text-gray-500">No hay productos añadidos aún.</p>
+              ) : (
+                <>
+                  {/* ✅ En móvil: lista normal. En desktop: esta parte scrollea */}
+                  <div className="space-y-4 lg:flex-1 lg:overflow-auto lg:min-h-0 lg:pr-1">
+                    {estimateItems.map((item) => (
+                      <div key={item.id} className="p-3 border rounded">
+                        <p className="font-semibold">{item.name}</p>
+                        <p className="text-sm text-gray-600">{item.description}</p>
 
-                      <div className="flex flex-wrap items-center gap-3 mt-2">
-                        <label className="text-sm">Cantidad:</label>
-                        <input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            dispatch(updateQuantity({
-                              id: item.id,
-                              quantity: parseInt(e.target.value)
-                            }))
-                          }
-                          className="w-16 p-1 border rounded"
-                        />
+                        <div className="flex flex-wrap items-center gap-3 mt-2">
+                          <label className="text-sm">Cantidad:</label>
+                          <input
+                            type="number"
+                            value={item.quantity}
+                            onChange={(e) =>
+                              dispatch(updateQuantity({
+                                id: item.id,
+                                quantity: parseInt(e.target.value)
+                              }))
+                            }
+                            className="w-16 p-1 border rounded"
+                          />
 
-                        <label className="text-sm">Precio:</label>
-                        <input
-                          type="number"
-                          value={item.price}
-                          onChange={(e) =>
-                            dispatch(updatePrice({
-                              id: item.id,
-                              price: parseFloat(e.target.value)
-                            }))
-                          }
-                          className="w-24 p-1 border rounded"
-                        />
+                          <label className="text-sm">Precio:</label>
+                          <input
+                            type="number"
+                            value={item.price}
+                            onChange={(e) =>
+                              dispatch(updatePrice({
+                                id: item.id,
+                                price: parseFloat(e.target.value)
+                              }))
+                            }
+                            className="w-24 p-1 border rounded"
+                          />
 
-                        <span className="ml-auto font-semibold">
-                          ${(item.quantity * item.price).toFixed(2)}
-                        </span>
+                          <span className="ml-auto font-semibold">
+                            ${(item.quantity * item.price).toFixed(2)}
+                          </span>
 
-                        <button
-                          onClick={() => dispatch(removeFromEstimate(item.id))}
-                          className="px-3 py-1 bg-red-500 text-white rounded"
-                        >
-                          Quitar
-                        </button>
+                          <button
+                            onClick={() => dispatch(removeFromEstimate(item.id))}
+                            className="px-3 py-1 bg-red-500 text-white rounded"
+                          >
+                            Quitar
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* ✅ Footer fijo dentro del panel */}
-                <div className="pt-3 border-t text-right">
-                  <h3 className="text-lg font-bold">Total: ${total.toFixed(2)}</h3>
-
-                  <div className="flex gap-2 justify-end mt-2">
-                    <button
-                      onClick={() => {
-                        dispatch(clearEstimate());
-                        setClientName('');
-                        setClientAddress('');
-                        setClientPhone('');
-                        setClientEmail('');
-                        setClientNotes('');
-                      }}
-                      className="px-4 py-2 bg-gray-700 text-white rounded"
-                    >
-                      Limpiar
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        if (!clientName || !clientAddress || !clientPhone) {
-                          toast.error("Por favor completa el nombre, dirección y teléfono del cliente.", {
-                            position: "bottom-right"
-                          });
-                          return;
-                        }
-                        generateEstimatePDF(estimateItems);
-                      }}
-                      className="px-4 py-2 bg-green-600 text-white rounded"
-                    >
-                      Descargar PDF
-                    </button>
+                    ))}
                   </div>
-                </div>
-              </>
-            )}
+
+                  {/* ✅ Footer siempre visible (móvil y desktop) */}
+                  <div className="pt-3 mt-3 border-t text-right">
+                    <h3 className="text-lg font-bold">Total: ${total.toFixed(2)}</h3>
+
+                    <div className="flex gap-2 justify-end mt-2">
+                      <button
+                        onClick={() => {
+                          dispatch(clearEstimate());
+                          setClientName('');
+                          setClientAddress('');
+                          setClientPhone('');
+                          setClientEmail('');
+                          setClientNotes('');
+                        }}
+                        className="px-4 py-2 bg-gray-700 text-white rounded"
+                      >
+                        Limpiar
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          if (!clientName || !clientAddress || !clientPhone) {
+                            toast.error("Por favor completa el nombre, dirección y teléfono del cliente.", {
+                              position: "bottom-right"
+                            });
+                            return;
+                          }
+                          generateEstimatePDF(estimateItems);
+                        }}
+                        className="px-4 py-2 bg-green-600 text-white rounded"
+                      >
+                        Descargar PDF
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
           </div>
-
         </div>
-      </div>
 
+      </div>
     </div>
   </>
 );
+
 
 };
 
