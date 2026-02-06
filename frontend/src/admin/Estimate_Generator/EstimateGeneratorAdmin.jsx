@@ -325,132 +325,137 @@ return (
   <>
     <div className="mt-[90px] px-4"></div>
 
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    {/* Filtro */}
+    <div className="max-w-7xl mx-auto mb-6 px-4">
+      <input
+        type="text"
+        placeholder="Buscar mueble por nombre..."
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        className="w-full border border-gray-300 rounded px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+
+    {/* Layout principal */}
+    <div className="max-w-7xl mx-auto px-4 pb-12">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        {/* ✅ IZQUIERDA: Filtro + Productos */}
+        {/* IZQUIERDA: Productos */}
         <div className="lg:col-span-2">
-          {/* Filtro */}
-          <div className="mb-6">
-            <input
-              type="text"
-              placeholder="Buscar mueble por nombre..."
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <div className="py-6 space-y-6">
+            <h2 className="text-2xl font-semibold text-center">📦 Muebles disponibles</h2>
 
-          <h2 className="text-2xl font-semibold mb-4 text-center">📦 Muebles disponibles</h2>
+            <div className="flex flex-col gap-6 w-full">
+              {Object.entries(groupedVariants)
+                .filter(([_, group]) => group.name.toLowerCase().includes(filter.toLowerCase()))
+                .map(([productId, group]) => {
+                  const productName = group.name;
+                  const groupVariants = group.variants || [];
+                  const productImage = groupVariants.find(v => v.image_path)?.image_path;
 
-          <div className="flex flex-col gap-6 w-full">
-            {Object.entries(groupedVariants)
-              .filter(([_, group]) => group.name.toLowerCase().includes(filter.toLowerCase()))
-              .map(([productId, group]) => {
-                const productName = group.name;
-                const groupVariants = group.variants || [];
-                const productImage = groupVariants.find(v => v.image_path)?.image_path;
+                  const selected = selectedOptions[productId] || {};
+                  const selectedVariant = groupVariants.find(
+                    v => v.color === selected.color && v.size === selected.size
+                  );
 
-                const selected = selectedOptions[productId] || {};
-                const selectedVariant = groupVariants.find(
-                  v => v.color === selected.color && v.size === selected.size
-                );
+                  const availableColors = Array.from(new Set(groupVariants.map(v => v.color)));
+                  const availableSizes = Array.from(new Set(groupVariants.map(v => v.size)));
 
-                const availableColors = Array.from(new Set(groupVariants.map(v => v.color)));
-                const availableSizes = Array.from(new Set(groupVariants.map(v => v.size)));
+                  return (
+                    <div
+                      key={productId}
+                      className="flex flex-col md:flex-row border rounded-lg shadow p-4 gap-4 bg-white"
+                    >
+                      {/* Imagen */}
+                      {productImage && (
+                        <div className="w-full md:w-1/2">
+                          <img
+                            src={getImageUrl(productImage)}
+                            alt="Producto"
+                            className="w-full h-full object-cover rounded"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
 
-                return (
-                  <div
-                    key={productId}
-                    className="flex flex-col md:flex-row border rounded-lg shadow p-4 gap-4"
-                  >
-                    {/* Imagen */}
-                    {productImage && (
-                      <div className="w-full md:w-1/2">
-                        <img
-                          src={getImageUrl(productImage)}
-                          alt="Producto"
-                          className="w-full h-full object-cover rounded"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    )}
+                      {/* Info */}
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <h3 className="text-2xl font-bold">{productName}</h3>
+                          <p className="text-gray-700 mb-2">
+                            <strong>Descripción: </strong>{groupVariants[0]?.description}
+                          </p>
 
-                    {/* Info */}
-                    <div className="flex-1 flex flex-col justify-between">
-                      <div>
-                        <h3 className="text-2xl font-bold">{productName}</h3>
-                        <p className="text-gray-700 mb-2">
-                          <strong>Descripción: </strong>{groupVariants[0]?.description}
-                        </p>
-
-                        <div className="mb-2">
-                          <p className="font-medium">Colores:</p>
-                          <div className="flex gap-3 flex-wrap">
-                            {availableColors.map(color => {
-                              const colorHex = groupVariants.find(v => v.color === color)?.colorHex;
-                              const isSelected = selected.color === color;
-                              return (
-                                <div
-                                  key={color}
-                                  onClick={() => handleOptionChange(productId, 'color', color)}
-                                  className="cursor-pointer"
-                                >
-                                  <span
-                                    className={`block w-6 h-6 rounded border-2 ${
-                                      isSelected ? 'ring-2 ring-blue-500' : 'border-gray-300'
-                                    }`}
-                                    style={{ backgroundColor: colorHex }}
-                                    title={color}
-                                  ></span>
-                                  <span className="text-xs">{color}</span>
-                                </div>
-                              );
-                            })}
+                          <div className="mb-2">
+                            <p className="font-medium">Colores:</p>
+                            <div className="flex gap-3 flex-wrap">
+                              {availableColors.map(color => {
+                                const colorHex = groupVariants.find(v => v.color === color)?.colorHex;
+                                const isSelected = selected.color === color;
+                                return (
+                                  <div
+                                    key={color}
+                                    onClick={() => handleOptionChange(productId, 'color', color)}
+                                    className="cursor-pointer"
+                                  >
+                                    <span
+                                      className={`block w-6 h-6 rounded border-2 ${
+                                        isSelected ? 'ring-2 ring-blue-500' : 'border-gray-300'
+                                      }`}
+                                      style={{ backgroundColor: colorHex }}
+                                      title={color}
+                                    ></span>
+                                    <span className="text-xs">{color}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
+
+                          <div className="mt-2 space-y-1">
+                            {availableSizes.map(size => (
+                              <label
+                                key={size}
+                                className="flex items-center space-x-2 text-sm"
+                              >
+                                <input
+                                  type="radio"
+                                  name={`size-${productId}`}
+                                  value={size}
+                                  checked={selected.size === size}
+                                  onChange={() => handleOptionChange(productId, 'size', size)}
+                                />
+                                <span>{size}</span>
+                              </label>
+                            ))}
+                          </div>
+
+                          <p className="mt-2 font-semibold text-gray-800">
+                            Precio: {selectedVariant ? `$${selectedVariant.price}` : '---'}
+                          </p>
                         </div>
 
-                        <div className="mt-2 space-y-1">
-                          {availableSizes.map(size => (
-                            <label key={size} className="flex items-center space-x-2 text-sm">
-                              <input
-                                type="radio"
-                                name={`size-${productId}`}
-                                value={size}
-                                checked={selected.size === size}
-                                onChange={() => handleOptionChange(productId, 'size', size)}
-                              />
-                              <span>{size}</span>
-                            </label>
-                          ))}
-                        </div>
-
-                        <p className="mt-2 font-semibold text-gray-800">
-                          Precio: {selectedVariant ? `$${selectedVariant.price}` : '---'}
-                        </p>
+                        <button
+                          onClick={() => handleAdd(productId)}
+                          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                          Agregar
+                        </button>
                       </div>
-
-                      <button
-                        onClick={() => handleAdd(productId)}
-                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                      >
-                        Agregar
-                      </button>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+            </div>
           </div>
         </div>
 
-        {/* ✅ DERECHA: Cliente + Presupuesto */}
+        {/* DERECHA: Panel sticky (Cliente + Presupuesto) */}
         <div className="lg:col-span-1">
-          {/* En desktop: sticky + alto max. En móvil: normal (sin apachurrar). */}
-          <div className="space-y-6 lg:sticky lg:top-[96px] lg:max-h-[calc(100vh-110px)] lg:overflow-hidden">
+          <div className="space-y-6 lg:space-y-0 lg:gap-6 lg:sticky lg:top-[96px] lg:h-[calc(100vh-110px)] lg:flex lg:flex-col lg:overflow-hidden">
 
-            {/* Cliente (no se aplasta) */}
+            {/* Cliente */}
             <div className="p-4 border rounded shadow bg-white lg:shrink-0">
               <h2 className="text-xl font-semibold mb-4 text-center">📇 Información del cliente</h2>
 
@@ -493,14 +498,14 @@ return (
             </div>
 
             {/* Presupuesto */}
-            <div className="p-4 border rounded shadow bg-white lg:min-h-0 lg:flex lg:flex-col">
-              <h2 className="text-xl font-semibold mb-4 text-center">🧾 Presupuesto generado</h2>
+            <div className="p-4 border rounded shadow bg-white lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
+              <h2 className="text-xl font-semibold mb-3 text-center">🧾 Presupuesto generado</h2>
 
               {estimateItems.length === 0 ? (
                 <p className="text-center text-gray-500">No hay productos añadidos aún.</p>
               ) : (
                 <>
-                  {/* ✅ En móvil: lista normal. En desktop: esta parte scrollea */}
+                  {/* Lista (solo esta parte scrollea en desktop) */}
                   <div className="space-y-4 lg:flex-1 lg:overflow-auto lg:min-h-0 lg:pr-1">
                     {estimateItems.map((item) => (
                       <div key={item.id} className="p-3 border rounded">
@@ -535,7 +540,7 @@ return (
                           />
 
                           <span className="ml-auto font-semibold">
-                            ${(item.quantity * item.price).toFixed(2)}
+                            Subtotal: ${(item.quantity * item.price).toFixed(2)}
                           </span>
 
                           <button
@@ -549,11 +554,11 @@ return (
                     ))}
                   </div>
 
-                  {/* ✅ Footer siempre visible (móvil y desktop) */}
-                  <div className="pt-3 mt-3 border-t text-right">
+                  {/* Footer fijo dentro del panel (siempre visible) */}
+                  <div className="pt-3 mt-3 border-t text-right lg:shrink-0 bg-white">
                     <h3 className="text-lg font-bold">Total: ${total.toFixed(2)}</h3>
 
-                    <div className="flex gap-2 justify-end mt-2">
+                    <div className="flex gap-3 justify-end mt-2">
                       <button
                         onClick={() => {
                           dispatch(clearEstimate());
@@ -595,6 +600,7 @@ return (
     </div>
   </>
 );
+
 
 
 };
