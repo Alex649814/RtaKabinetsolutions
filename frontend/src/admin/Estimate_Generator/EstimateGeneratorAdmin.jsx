@@ -235,7 +235,7 @@ const EstimateGeneratorAdmin = () => {
     // ✅ NOTAS (con default si no hay texto)
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(200, 0, 0);
+    doc.setTextColor(45, 55, 72);
     doc.text("Client Information", 14, finalY + 20);
 
     doc.setTextColor(0, 0, 0);
@@ -246,8 +246,6 @@ const EstimateGeneratorAdmin = () => {
     const boxY = finalY + 23;
     const boxW = 126;
     const boxH = 26;
-
-    doc.rect(boxX, boxY, boxW, boxH);
 
     const defaultNotes =
       "1. This estimate is valid for 30 days from the date issued.\n" +
