@@ -254,6 +254,17 @@ doc.text(wrapped, boxX + 3, boxY + 7);
   const [clientEmail, setClientEmail] = useState('');
   const [clientNotes, setClientNotes] = useState('');
 
+  const BACKEND_BASE =
+  import.meta.env.DEV ? "http://localhost:5000" : window.location.origin;
+
+  const getImageUrl = (path) => {
+    if (!path) return "";
+    if (/^https?:\/\//i.test(path)) return path;
+    return `${BACKEND_BASE}${path}`;
+  };
+
+
+
   return (
     <>
     <div className="mt-[90px] px-4"></div>
@@ -294,7 +305,7 @@ doc.text(wrapped, boxX + 3, boxY + 7);
                   {productImage && (
                     <div className="w-full md:w-1/2">
                       <img
-                        src={`http://localhost:5000${productImage}`}
+                        src={getImageUrl(productImage)}
                         alt="Producto"
                         className="w-full h-full object-cover rounded"
                       />
@@ -356,6 +367,7 @@ doc.text(wrapped, boxX + 3, boxY + 7);
                       onClick={() => handleAdd(productId)}
                       className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
+                      
                       Agregar
                     </button>
                   </div>
