@@ -43,16 +43,7 @@ function App() {
             <Route path="EstimateGenerator" element={<EstimateGeneratorAdmin />} />
           </Route>
         </Routes>
-        <ToastContainer
-          position="bottom-right"
-          autoClose={2000}
-          hideProgressBar
-          closeOnClick
-          pauseOnHover={false}
-          pauseOnFocusLoss={false}
-          draggable={false}
-          limit={3}
-        />
+        <ToastContainer position='bottom-right' autoClose={3000} />
 </AuthProvider>
     </>
   );

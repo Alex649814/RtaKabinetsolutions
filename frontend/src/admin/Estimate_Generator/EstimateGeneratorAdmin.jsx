@@ -11,7 +11,7 @@ import {
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast, ToastContainer } from 'react-toastify';
-import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const EstimateGeneratorAdmin = () => {
   const dispatch = useDispatch();
@@ -406,7 +406,18 @@ const EstimateGeneratorAdmin = () => {
                 </div>
               );
             })}
-        </div>   
+        </div>
+
+          <ToastContainer
+            position="bottom-right"
+            autoClose={2000}
+            hideProgressBar
+            closeOnClick
+            pauseOnHover={false}
+            pauseOnFocusLoss={false}
+            draggable={false}
+            limit={3}
+          />      
         
         </div>
 
