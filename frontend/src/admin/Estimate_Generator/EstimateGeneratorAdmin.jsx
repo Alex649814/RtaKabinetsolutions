@@ -266,7 +266,7 @@ if (finalY + neededSpace > footerLineY) {
 // =======================
 doc.setFontSize(10);
 doc.setFont("helvetica", "normal");
-doc.setTextColor(45, 55, 72);
+doc.setTextColor(200, 0, 0);
 
 // Cambia el título si quieres: Notes / Conditions
 doc.text("Client Information", 14, finalY + 12);
@@ -281,7 +281,7 @@ const boxW = 126;
 const boxH = 26;
 
 // ✅ si quieres mantener el recuadro de notas, déjalo:
-doc.rect(boxX, boxY, boxW, boxH);
+//doc.rect(boxX, boxY, boxW, boxH);
 
 const defaultNotes =
   "1. This estimate is valid for 30 days from the date issued.\n" +
