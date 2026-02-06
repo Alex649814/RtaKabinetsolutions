@@ -352,7 +352,8 @@ doc.text("Client", 165, finalY + 17);
 
     doc.save("presupuesto.pdf");
   };
-
+const [isPanelOpen, setIsPanelOpen] = useState(false);
+const [isPanelMin, setIsPanelMin] = useState(true);
 return (
   <>
     <div className="mt-[90px] px-4"></div>
