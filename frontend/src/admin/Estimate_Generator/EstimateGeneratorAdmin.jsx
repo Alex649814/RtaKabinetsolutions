@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductVariants } from '../../features/productVariants/productVariantsSlice';
 import {
@@ -135,6 +135,38 @@ const EstimateGeneratorAdmin = () => {
     (acc, item) => acc + (item.quantity * item.price),
     0
   );
+
+  const estimateRef = useRef(null);
+  const [isMiniVisible, setIsMiniVisible] = useState(false);
+  const [isEstimateOpen, setIsEstimateOpen] = useState(false);
+
+  // Muestra el mini-panel cuando la sección del presupuesto NO está visible
+  useEffect(() => {
+    const el = estimateRef.current;
+    if (!el) return;
+
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        // Si NO se ve el presupuesto en pantalla -> mostramos el mini
+        setIsMiniVisible(!entry.isIntersecting);
+      },
+      { threshold: 0.12 }
+    );
+
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [estimateItems.length]);
+
+  // Bloquea scroll del body cuando el panel está abierto (tipo YouTube)
+  useEffect(() => {
+    if (!isEstimateOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev || '';
+    };
+  }, [isEstimateOpen]);
+
 
   const generateEstimatePDF = (items) => {
     const doc = new jsPDF();
@@ -326,7 +358,7 @@ return (
     <div className="mt-[90px] px-4"></div>
 
     {/* Filtro */}
-    <div className="max-w-7xl mx-auto mb-6 px-4">
+    <div className="max-w-4xl mx-auto mb-6 px-4">
       <input
         type="text"
         placeholder="Buscar mueble por nombre..."
@@ -336,268 +368,386 @@ return (
       />
     </div>
 
-    {/* Layout principal */}
-    <div className="max-w-7xl mx-auto px-4 pb-12">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    {/* Lista de productos */}
+    <div className="max-w-6xl mx-auto py-12 px-4 space-y-12">
+      <h2 className="text-2xl font-semibold mb-4 text-center">📦 Muebles disponibles</h2>
 
-        {/* IZQUIERDA: Productos */}
-        <div className="lg:col-span-2">
-          <div className="py-6 space-y-6">
-            <h2 className="text-2xl font-semibold text-center">📦 Muebles disponibles</h2>
+      <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
+        {Object.entries(groupedVariants)
+          .filter(([_, group]) => group.name.toLowerCase().includes(filter.toLowerCase()))
+          .map(([productId, group]) => {
+            const productName = group.name;
+            const groupVariants = group.variants || [];
+            const productImage = groupVariants.find(v => v.image_path)?.image_path;
 
-            <div className="flex flex-col gap-6 w-full">
-              {Object.entries(groupedVariants)
-                .filter(([_, group]) => group.name.toLowerCase().includes(filter.toLowerCase()))
-                .map(([productId, group]) => {
-                  const productName = group.name;
-                  const groupVariants = group.variants || [];
-                  const productImage = groupVariants.find(v => v.image_path)?.image_path;
+            const selected = selectedOptions[productId] || {};
+            const selectedVariant = groupVariants.find(
+              v => v.color === selected.color && v.size === selected.size
+            );
 
-                  const selected = selectedOptions[productId] || {};
-                  const selectedVariant = groupVariants.find(
-                    v => v.color === selected.color && v.size === selected.size
-                  );
+            const availableColors = Array.from(new Set(groupVariants.map(v => v.color)));
+            const availableSizes = Array.from(new Set(groupVariants.map(v => v.size)));
 
-                  const availableColors = Array.from(new Set(groupVariants.map(v => v.color)));
-                  const availableSizes = Array.from(new Set(groupVariants.map(v => v.size)));
+            return (
+              <div
+                key={productId}
+                className="flex flex-col md:flex-row border rounded-lg shadow p-4 gap-4 bg-white"
+              >
+                {/* Imagen */}
+                {productImage && (
+                  <div className="w-full md:w-1/2">
+                    <img
+                      src={getImageUrl(productImage)}
+                      alt="Producto"
+                      className="w-full h-full object-cover rounded"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
 
-                  return (
-                    <div
-                      key={productId}
-                      className="flex flex-col md:flex-row border rounded-lg shadow p-4 gap-4 bg-white"
-                    >
-                      {/* Imagen */}
-                      {productImage && (
-                        <div className="w-full md:w-1/2">
-                          <img
-                            src={getImageUrl(productImage)}
-                            alt="Producto"
-                            className="w-full h-full object-cover rounded"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        </div>
-                      )}
+                {/* Info */}
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-2xl font-bold">{productName}</h3>
+                    <p className="text-gray-700 mb-2">
+                      <strong>Descripción: </strong>{groupVariants[0]?.description}
+                    </p>
 
-                      {/* Info */}
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div>
-                          <h3 className="text-2xl font-bold">{productName}</h3>
-                          <p className="text-gray-700 mb-2">
-                            <strong>Descripción: </strong>{groupVariants[0]?.description}
-                          </p>
-
-                          <div className="mb-2">
-                            <p className="font-medium">Colores:</p>
-                            <div className="flex gap-3 flex-wrap">
-                              {availableColors.map(color => {
-                                const colorHex = groupVariants.find(v => v.color === color)?.colorHex;
-                                const isSelected = selected.color === color;
-                                return (
-                                  <div
-                                    key={color}
-                                    onClick={() => handleOptionChange(productId, 'color', color)}
-                                    className="cursor-pointer"
-                                  >
-                                    <span
-                                      className={`block w-6 h-6 rounded border-2 ${
-                                        isSelected ? 'ring-2 ring-blue-500' : 'border-gray-300'
-                                      }`}
-                                      style={{ backgroundColor: colorHex }}
-                                      title={color}
-                                    ></span>
-                                    <span className="text-xs">{color}</span>
-                                  </div>
-                                );
-                              })}
+                    <div className="mb-2">
+                      <p className="font-medium">Colores:</p>
+                      <div className="flex gap-3 flex-wrap">
+                        {availableColors.map(color => {
+                          const colorHex = groupVariants.find(v => v.color === color)?.colorHex;
+                          const isSelected = selected.color === color;
+                          return (
+                            <div
+                              key={color}
+                              onClick={() => handleOptionChange(productId, 'color', color)}
+                              className="cursor-pointer"
+                            >
+                              <span
+                                className={`block w-6 h-6 rounded border-2 ${
+                                  isSelected ? 'ring-2 ring-blue-500' : 'border-gray-300'
+                                }`}
+                                style={{ backgroundColor: colorHex }}
+                                title={color}
+                              ></span>
+                              <span className="text-xs">{color}</span>
                             </div>
-                          </div>
-
-                          <div className="mt-2 space-y-1">
-                            {availableSizes.map(size => (
-                              <label
-                                key={size}
-                                className="flex items-center space-x-2 text-sm"
-                              >
-                                <input
-                                  type="radio"
-                                  name={`size-${productId}`}
-                                  value={size}
-                                  checked={selected.size === size}
-                                  onChange={() => handleOptionChange(productId, 'size', size)}
-                                />
-                                <span>{size}</span>
-                              </label>
-                            ))}
-                          </div>
-
-                          <p className="mt-2 font-semibold text-gray-800">
-                            Precio: {selectedVariant ? `$${selectedVariant.price}` : '---'}
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={() => handleAdd(productId)}
-                          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        >
-                          Agregar
-                        </button>
+                          );
+                        })}
                       </div>
                     </div>
-                  );
-                })}
+
+                    <div className="mt-2 space-y-1">
+                      {availableSizes.map(size => (
+                        <label key={size} className="flex items-center space-x-2 text-sm">
+                          <input
+                            type="radio"
+                            name={`size-${productId}`}
+                            value={size}
+                            checked={selected.size === size}
+                            onChange={() => handleOptionChange(productId, 'size', size)}
+                          />
+                          <span>{size}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    <p className="mt-2 font-semibold text-gray-800">
+                      Precio: {selectedVariant ? `$${selectedVariant.price}` : '---'}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => handleAdd(productId)}
+                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Agregar
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+      </div>
+    </div>
+
+    {/* Cliente */}
+    <div className="max-w-4xl mx-auto mt-8 p-4 border rounded shadow bg-white">
+      <h2 className="text-xl font-semibold mb-4 text-center">📇 Información del cliente</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input
+          type="text"
+          placeholder="Nombre del cliente"
+          value={clientName}
+          onChange={(e) => setClientName(e.target.value)}
+          className="border p-2 rounded"
+        />
+        <input
+          type="text"
+          placeholder="Dirección"
+          value={clientAddress}
+          onChange={(e) => setClientAddress(e.target.value)}
+          className="border p-2 rounded"
+        />
+        <input
+          type="text"
+          placeholder="Teléfono"
+          value={clientPhone}
+          onChange={(e) => setClientPhone(e.target.value)}
+          className="border p-2 rounded"
+        />
+        <input
+          type="email"
+          placeholder="Correo electrónico"
+          value={clientEmail}
+          onChange={(e) => setClientEmail(e.target.value)}
+          className="border p-2 rounded"
+        />
+        <textarea
+          placeholder="Notas / condiciones (opcional)..."
+          value={clientNotes}
+          onChange={(e) => setClientNotes(e.target.value)}
+          className="border p-2 rounded md:col-span-2 h-28 resize-none"
+        />
+      </div>
+    </div>
+
+    {/* Presupuesto (sección normal) */}
+    <div ref={estimateRef} className="max-w-4xl mx-auto mt-10 pb-28">
+      <h2 className="text-2xl font-semibold mb-4 text-center">🧾 Presupuesto generado</h2>
+
+      {estimateItems.length === 0 ? (
+        <p className="text-center text-gray-500">No hay productos añadidos aún.</p>
+      ) : (
+        <div className="space-y-4">
+          {estimateItems.map((item) => (
+            <div key={item.id} className="p-4 border rounded bg-white">
+              <p className="font-semibold">{item.name}</p>
+              <p className="text-sm text-gray-600">{item.description}</p>
+
+              <div className="flex items-center gap-4 mt-2 flex-wrap">
+                <label>Cantidad:</label>
+                <input
+                  type="number"
+                  value={item.quantity}
+                  onChange={(e) =>
+                    dispatch(updateQuantity({
+                      id: item.id,
+                      quantity: parseInt(e.target.value)
+                    }))
+                  }
+                  className="w-16 p-1 border rounded"
+                />
+
+                <label>Precio:</label>
+                <input
+                  type="number"
+                  value={item.price}
+                  onChange={(e) =>
+                    dispatch(updatePrice({
+                      id: item.id,
+                      price: parseFloat(e.target.value)
+                    }))
+                  }
+                  className="w-24 p-1 border rounded"
+                />
+
+                <span className="ml-auto font-semibold">
+                  Subtotal: ${(item.quantity * item.price).toFixed(2)}
+                </span>
+
+                <button
+                  onClick={() => dispatch(removeFromEstimate(item.id))}
+                  className="px-3 py-1 bg-red-500 text-white rounded"
+                >
+                  Quitar
+                </button>
+              </div>
             </div>
+          ))}
+
+          <div className="mt-6 text-right">
+            <h3 className="text-xl font-bold">Total: ${total.toFixed(2)}</h3>
+
+            <button
+              onClick={() => {
+                dispatch(clearEstimate());
+                setClientName('');
+                setClientAddress('');
+                setClientPhone('');
+                setClientEmail('');
+                setClientNotes('');
+              }}
+              className="mt-2 px-4 py-2 bg-gray-700 text-white rounded"
+            >
+              Limpiar
+            </button>
+
+            <button
+              onClick={() => {
+                if (!clientName || !clientAddress || !clientPhone) {
+                  toast.error("Por favor completa el nombre, dirección y teléfono del cliente.", {
+                    position: "bottom-right"
+                  });
+                  return;
+                }
+                generateEstimatePDF(estimateItems);
+              }}
+              className="mt-2 ml-4 px-4 py-2 bg-green-600 text-white rounded"
+            >
+              Descargar PDF
+            </button>
           </div>
         </div>
+      )}
+    </div>
 
-        {/* DERECHA: Panel sticky (Cliente + Presupuesto) */}
-        <div className="lg:col-span-1">
-          <div className="space-y-6 lg:space-y-0 lg:gap-6 lg:sticky lg:top-[96px] lg:h-[calc(100vh-110px)] lg:flex lg:flex-col lg:overflow-hidden">
+    {/* ===== Mini panel flotante (tipo YouTube) ===== */}
+    {estimateItems.length > 0 && isMiniVisible && !isEstimateOpen && (
+      <button
+        onClick={() => setIsEstimateOpen(true)}
+        className="fixed z-[9998] bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-[360px]
+                   bg-white border shadow-lg rounded-xl p-4 text-left hover:shadow-xl transition"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <div className="font-semibold">🧾 Presupuesto</div>
+            <div className="text-xs text-gray-600">
+              {estimateItems.length} producto(s) • Toca para abrir
+            </div>
+          </div>
 
-            {/* Cliente */}
-            <div className="p-4 border rounded shadow bg-white lg:shrink-0">
-              <h2 className="text-xl font-semibold mb-4 text-center">📇 Información del cliente</h2>
+          <div className="text-right">
+            <div className="text-xs text-gray-500">Total</div>
+            <div className="text-lg font-bold">${total.toFixed(2)}</div>
+          </div>
+        </div>
+      </button>
+    )}
 
-              <div className="grid grid-cols-1 gap-4">
-                <input
-                  type="text"
-                  placeholder="Nombre del cliente"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  className="border p-2 rounded"
-                />
-                <input
-                  type="text"
-                  placeholder="Dirección"
-                  value={clientAddress}
-                  onChange={(e) => setClientAddress(e.target.value)}
-                  className="border p-2 rounded"
-                />
-                <input
-                  type="text"
-                  placeholder="Teléfono"
-                  value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  className="border p-2 rounded"
-                />
-                <input
-                  type="email"
-                  placeholder="Correo electrónico"
-                  value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
-                  className="border p-2 rounded"
-                />
-                <textarea
-                  placeholder="Notas / condiciones (opcional)..."
-                  value={clientNotes}
-                  onChange={(e) => setClientNotes(e.target.value)}
-                  className="border p-2 rounded h-28 resize-none"
-                />
+    {/* ===== Bottom Sheet (panel expandido) ===== */}
+    {isEstimateOpen && (
+      <div className="fixed inset-0 z-[9999]">
+        {/* Overlay */}
+        <div
+          className="absolute inset-0 bg-black/40"
+          onClick={() => setIsEstimateOpen(false)}
+        />
+
+        {/* Panel */}
+        <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl max-h-[85vh] flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b">
+            <div>
+              <div className="font-semibold text-lg">🧾 Presupuesto</div>
+              <div className="text-xs text-gray-500">
+                {estimateItems.length} producto(s)
               </div>
             </div>
 
-            {/* Presupuesto */}
-            <div className="p-4 border rounded shadow bg-white lg:flex-1 lg:min-h-0 lg:flex lg:flex-col">
-              <h2 className="text-xl font-semibold mb-3 text-center">🧾 Presupuesto generado</h2>
+            <button
+              onClick={() => setIsEstimateOpen(false)}
+              className="w-9 h-9 rounded-full border flex items-center justify-center hover:bg-gray-50"
+              aria-label="Cerrar"
+            >
+              ✕
+            </button>
+          </div>
 
-              {estimateItems.length === 0 ? (
-                <p className="text-center text-gray-500">No hay productos añadidos aún.</p>
-              ) : (
-                <>
-                  {/* Lista (solo esta parte scrollea en desktop) */}
-                  <div className="space-y-4 lg:flex-1 lg:overflow-auto lg:min-h-0 lg:pr-1">
-                    {estimateItems.map((item) => (
-                      <div key={item.id} className="p-3 border rounded">
-                        <p className="font-semibold">{item.name}</p>
-                        <p className="text-sm text-gray-600">{item.description}</p>
+          {/* Body scroll */}
+          <div className="p-4 overflow-auto flex-1 space-y-4">
+            {estimateItems.map((item) => (
+              <div key={item.id} className="p-3 border rounded">
+                <p className="font-semibold">{item.name}</p>
+                <p className="text-sm text-gray-600">{item.description}</p>
 
-                        <div className="flex flex-wrap items-center gap-3 mt-2">
-                          <label className="text-sm">Cantidad:</label>
-                          <input
-                            type="number"
-                            value={item.quantity}
-                            onChange={(e) =>
-                              dispatch(updateQuantity({
-                                id: item.id,
-                                quantity: parseInt(e.target.value)
-                              }))
-                            }
-                            className="w-16 p-1 border rounded"
-                          />
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                  <label className="text-sm">Cantidad:</label>
+                  <input
+                    type="number"
+                    value={item.quantity}
+                    onChange={(e) =>
+                      dispatch(updateQuantity({
+                        id: item.id,
+                        quantity: parseInt(e.target.value)
+                      }))
+                    }
+                    className="w-16 p-1 border rounded"
+                  />
 
-                          <label className="text-sm">Precio:</label>
-                          <input
-                            type="number"
-                            value={item.price}
-                            onChange={(e) =>
-                              dispatch(updatePrice({
-                                id: item.id,
-                                price: parseFloat(e.target.value)
-                              }))
-                            }
-                            className="w-24 p-1 border rounded"
-                          />
+                  <label className="text-sm">Precio:</label>
+                  <input
+                    type="number"
+                    value={item.price}
+                    onChange={(e) =>
+                      dispatch(updatePrice({
+                        id: item.id,
+                        price: parseFloat(e.target.value)
+                      }))
+                    }
+                    className="w-24 p-1 border rounded"
+                  />
 
-                          <span className="ml-auto font-semibold">
-                            Subtotal: ${(item.quantity * item.price).toFixed(2)}
-                          </span>
+                  <span className="ml-auto font-semibold">
+                    Subtotal: ${(item.quantity * item.price).toFixed(2)}
+                  </span>
 
-                          <button
-                            onClick={() => dispatch(removeFromEstimate(item.id))}
-                            className="px-3 py-1 bg-red-500 text-white rounded"
-                          >
-                            Quitar
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <button
+                    onClick={() => dispatch(removeFromEstimate(item.id))}
+                    className="px-3 py-1 bg-red-500 text-white rounded"
+                  >
+                    Quitar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
 
-                  {/* Footer fijo dentro del panel (siempre visible) */}
-                  <div className="pt-3 mt-3 border-t text-right lg:shrink-0 bg-white">
-                    <h3 className="text-lg font-bold">Total: ${total.toFixed(2)}</h3>
-
-                    <div className="flex gap-3 justify-end mt-2">
-                      <button
-                        onClick={() => {
-                          dispatch(clearEstimate());
-                          setClientName('');
-                          setClientAddress('');
-                          setClientPhone('');
-                          setClientEmail('');
-                          setClientNotes('');
-                        }}
-                        className="px-4 py-2 bg-gray-700 text-white rounded"
-                      >
-                        Limpiar
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          if (!clientName || !clientAddress || !clientPhone) {
-                            toast.error("Por favor completa el nombre, dirección y teléfono del cliente.", {
-                              position: "bottom-right"
-                            });
-                            return;
-                          }
-                          generateEstimatePDF(estimateItems);
-                        }}
-                        className="px-4 py-2 bg-green-600 text-white rounded"
-                      >
-                        Descargar PDF
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
+          {/* Footer fijo */}
+          <div className="p-4 border-t bg-white">
+            <div className="flex items-center justify-between">
+              <div className="font-semibold">Total</div>
+              <div className="text-xl font-bold">${total.toFixed(2)}</div>
             </div>
 
+            <div className="flex gap-3 justify-end mt-3">
+              <button
+                onClick={() => {
+                  dispatch(clearEstimate());
+                  setClientName('');
+                  setClientAddress('');
+                  setClientPhone('');
+                  setClientEmail('');
+                  setClientNotes('');
+                  setIsEstimateOpen(false);
+                }}
+                className="px-4 py-2 bg-gray-700 text-white rounded"
+              >
+                Limpiar
+              </button>
+
+              <button
+                onClick={() => {
+                  if (!clientName || !clientAddress || !clientPhone) {
+                    toast.error("Por favor completa el nombre, dirección y teléfono del cliente.", {
+                      position: "bottom-right"
+                    });
+                    return;
+                  }
+                  generateEstimatePDF(estimateItems);
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded"
+              >
+                Descargar PDF
+              </button>
+            </div>
           </div>
         </div>
-
       </div>
-    </div>
+    )}
   </>
 );
 
