@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProductVariants } from '../../features/productVariants/productVariantsSlice';
 import {
@@ -15,26 +15,71 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const EstimateGeneratorAdmin = () => {
   const dispatch = useDispatch();
-  const variants = useSelector((state) => state.productVariants.list);
-  const estimateItems = useSelector((state) => state.estimate.items);
+  const variants = useSelector((state) => state.productVariants.list) || [];
+  const estimateItems = useSelector((state) => state.estimate.items) || [];
+
   const [selectedOptions, setSelectedOptions] = useState({});
   const [filter, setFilter] = useState('');
+
+  // Cliente
+  const [clientName, setClientName] = useState('');
+  const [clientAddress, setClientAddress] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
+  const [clientNotes, setClientNotes] = useState('');
 
   useEffect(() => {
     dispatch(fetchProductVariants());
   }, [dispatch]);
 
-  const groupedVariants = variants.reduce((acc, variant) => {
-    const key = variant.product_id;
-    if (!acc[key]) {
-      acc[key] = {
-        name: variant.product_name,
-        variants: []
-      };
-    }
-    acc[key].variants.push(variant);
-    return acc;
-  }, {});
+  // ✅ BACKEND BASE (Dockploy/Prod): usa env si existe
+  // En producción: setea VITE_BACKEND_URL o VITE_API_URL con tu dominio del backend
+  // Ej: VITE_BACKEND_URL=https://tudominio.com  (si tu reverse proxy manda /uploads al backend)
+  // o:  VITE_BACKEND_URL=https://api.tudominio.com
+  const DEV_BACKEND =
+    import.meta.env.VITE_BACKEND_URL ||
+    import.meta.env.VITE_API_URL ||
+    'http://localhost:5000';
+
+  const PROD_BACKEND =
+    import.meta.env.VITE_BACKEND_URL ||
+    import.meta.env.VITE_API_URL ||
+    window.location.origin;
+
+  const BACKEND_BASE = (import.meta.env.DEV ? DEV_BACKEND : PROD_BACKEND).replace(/\/$/, '');
+
+  // ✅ Normaliza rutas de imagen, incluyendo casos donde viene "http://localhost:5000/..."
+  const getImageUrl = (path) => {
+    if (!path) return '';
+
+    // si viene "http://localhost:5000/..." en prod, lo reemplazamos por tu backend real
+    const localhostFixed = path.replace(/^https?:\/\/localhost:\d+/i, BACKEND_BASE);
+
+    // si ya es URL completa (https://...) la regresamos (ya con fix de localhost si aplicaba)
+    if (/^https?:\/\//i.test(localhostFixed)) return localhostFixed;
+
+    // si viene sin slash, se lo agregamos
+    const normalizedPath = localhostFixed.startsWith('/') ? localhostFixed : `/${localhostFixed}`;
+
+    // si BACKEND_BASE es "", usamos ruta relativa
+    if (!BACKEND_BASE) return normalizedPath;
+
+    return `${BACKEND_BASE}${normalizedPath}`;
+  };
+
+  const groupedVariants = useMemo(() => {
+    return variants.reduce((acc, variant) => {
+      const key = variant.product_id;
+      if (!acc[key]) {
+        acc[key] = {
+          name: variant.product_name,
+          variants: []
+        };
+      }
+      acc[key].variants.push(variant);
+      return acc;
+    }, {});
+  }, [variants]);
 
   const handleOptionChange = (productId, type, value) => {
     setSelectedOptions((prev) => ({
@@ -47,44 +92,44 @@ const EstimateGeneratorAdmin = () => {
   };
 
   const handleAdd = (productId) => {
-  const options = selectedOptions[productId];
+    const options = selectedOptions[productId];
 
-  if (!options?.color || !options?.size) {
-    toast.error("Selecciona un color y una medida antes de agregar el producto.", {
+    if (!options?.color || !options?.size) {
+      toast.error("Selecciona un color y una medida antes de agregar el producto.", {
+        position: "bottom-right",
+        autoClose: 3000,
+        toastId: `error-${productId}`
+      });
+      return;
+    }
+
+    const variant = groupedVariants[productId]?.variants?.find(
+      (v) => v.color === options.color && v.size === options.size
+    );
+
+    if (!variant) {
+      toast.error("La combinación seleccionada no está disponible.", {
+        position: "bottom-right",
+        autoClose: 3000,
+        toastId: `unavailable-${productId}`
+      });
+      return;
+    }
+
+    dispatch(addToEstimate({
+      id: variant.id,
+      name: `${variant.product_name} - ${variant.color} - ${variant.size}`,
+      description: variant.description || '',
+      price: variant.price,
+      quantity: 1
+    }));
+
+    toast.success("Producto agregado al presupuesto", {
       position: "bottom-right",
-      autoClose: 3000,
-      toastId: `error-${productId}`
+      autoClose: 2000,
+      toastId: `success-${productId}`
     });
-    return;
-  }
-
-  const variant = groupedVariants[productId].variants.find(
-    (v) => v.color === options.color && v.size === options.size
-  );
-
-  if (!variant) {
-    toast.error("La combinación seleccionada no está disponible.", {
-      position: "bottom-right",
-      autoClose: 3000,
-      toastId: `unavailable-${productId}`
-    });
-    return;
-  }
-
-  dispatch(addToEstimate({
-    id: variant.id,
-    name: `${variant.product_name} - ${variant.color} - ${variant.size}`,
-    description: variant.description || '',
-    price: variant.price,
-    quantity: 1
-  }));
-
-  toast.success("Producto agregado al presupuesto", {
-    position: "bottom-right",
-    autoClose: 2000,
-    toastId: `success-${productId}`
-  });
-};
+  };
 
   const total = estimateItems.reduce(
     (acc, item) => acc + (item.quantity * item.price),
@@ -96,7 +141,7 @@ const EstimateGeneratorAdmin = () => {
     const estimateNumber = "001";
     const date = new Date().toLocaleDateString();
     const calculatedTotal = items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
-    
+
     doc.setFontSize(16);
     doc.setFont("times", "normal");
     doc.text("RTA KABINETS", 15, 20);
@@ -155,77 +200,70 @@ const EstimateGeneratorAdmin = () => {
     });
 
     autoTable(doc, {
-    head: [tableColumn],
-    body: tableRows,
-    startY: 70,
-    theme: 'grid',
-    headStyles: {
-      fillColor: [240, 237, 237],
-      textColor: 0,
-      halign: 'center'
-    },
-    styles: { fontSize: 10 }
-  });
-  // Añadir recuadro alrededor del encabezado
-  const headY = 70;
-  const rowHeight = 7.5;
-  const tableWidth = 182;
-  const tableX = 14;
+      head: [tableColumn],
+      body: tableRows,
+      startY: 70,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [240, 237, 237],
+        textColor: 0,
+        halign: 'center'
+      },
+      styles: { fontSize: 10 }
+    });
 
-  doc.setDrawColor(184,183,183);
-  doc.setLineWidth(0.5);
-  doc.rect(tableX, headY, tableWidth, rowHeight);
+    const headY = 70;
+    const rowHeight = 7.5;
+    const tableWidth = 182;
+    const tableX = 14;
 
-  // Obtener posición final de la tabla
-  const finalY = doc.lastAutoTable.finalY;
+    doc.setDrawColor(184, 183, 183);
+    doc.setLineWidth(0.5);
+    doc.rect(tableX, headY, tableWidth, rowHeight);
 
-  // Estilos para el total
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+    const finalY = doc.lastAutoTable.finalY;
 
-  // Dibujar celda del total unificada (ancho ajustado a 2 columnas)
-  doc.setDrawColor(184,183,183);
-  doc.setFillColor(240, 237, 237); // Gris
-  doc.rect(158, finalY, 38, 10, 'FD'); // 157 = alineado con columna Unit Cost
-  doc.setTextColor(0);
-  doc.text(`   Total:         $${calculatedTotal.toFixed(2)}`, 158, finalY + 7);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
 
+    doc.setDrawColor(184, 183, 183);
+    doc.setFillColor(240, 237, 237);
+    doc.rect(158, finalY, 38, 10, 'FD');
+    doc.setTextColor(0);
+    doc.text(`   Total:         $${calculatedTotal.toFixed(2)}`, 158, finalY + 7);
 
+    // ✅ NOTAS (con default si no hay texto)
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(200, 0, 0);
+    doc.text("Client Information", 14, finalY + 20);
 
-doc.setFontSize(10);
-doc.setFont("helvetica", "normal");
-doc.setTextColor(200, 0, 0);
-doc.text("Client Information", 14, finalY + 20);
+    doc.setTextColor(0, 0, 0);
+    doc.setDrawColor(184, 183, 183);
+    doc.setLineWidth(0.4);
 
-doc.setTextColor(0, 0, 0);
-doc.setDrawColor(184, 183, 183);
-doc.setLineWidth(0.4);
+    const boxX = 14;
+    const boxY = finalY + 23;
+    const boxW = 126;
+    const boxH = 26;
 
-// Caja para notas (no invade el cuadro de firma porque termina antes de x=145)
-const boxX = 14;
-const boxY = finalY + 23;
-const boxW = 126;   // llega aprox a x=140
-const boxH = 26;
+    doc.rect(boxX, boxY, boxW, boxH);
 
-doc.rect(boxX, boxY, boxW, boxH);
+    const defaultNotes =
+      "1. This estimate is valid for 30 days from the date issued.\n" +
+      "2. Any changes to the project scope may result in additional costs.";
 
-// Default notes si el cliente no escribió nada
-const defaultNotes =
-  "1. This estimate is valid for 30 days from the date issued.\n" +
-  "2. Any changes to the project scope may result in additional costs.";
+    const notesText = (clientNotes || "").trim() ? clientNotes.trim() : defaultNotes;
 
-const notesText = (clientNotes || "").trim() ? clientNotes.trim() : defaultNotes;
+    const wrapWithNewlines = (text, width) =>
+      text
+        .split("\n")
+        .flatMap((line) => doc.splitTextToSize(line, width));
 
-// Wrap respetando saltos de línea
-const wrapWithNewlines = (text, width) =>
-  text
-    .split("\n")
-    .flatMap((line) => doc.splitTextToSize(line, width));
+    const wrapped = wrapWithNewlines(notesText, boxW - 6);
+    doc.text(wrapped, boxX + 3, boxY + 7);
 
-const wrapped = wrapWithNewlines(notesText, boxW - 6);
-doc.text(wrapped, boxX + 3, boxY + 7);
-    
-
+    // Firma
     doc.setDrawColor(0);
     doc.rect(145, finalY + 20, 50, 25);
     doc.text("Client", 165, finalY + 24);
@@ -248,28 +286,11 @@ doc.text(wrapped, boxX + 3, boxY + 7);
     doc.save("presupuesto.pdf");
   };
 
-  const [clientName, setClientName] = useState('');
-  const [clientAddress, setClientAddress] = useState('');
-  const [clientPhone, setClientPhone] = useState('');
-  const [clientEmail, setClientEmail] = useState('');
-  const [clientNotes, setClientNotes] = useState('');
-  
-
-  const BACKEND_BASE =
-  import.meta.env.DEV ? "http://localhost:5000" : window.location.origin;
-
-  const getImageUrl = (path) => {
-    if (!path) return "";
-    if (/^https?:\/\//i.test(path)) return path;
-    return `${BACKEND_BASE}${path}`;
-  };
-
-
-
   return (
     <>
-    <div className="mt-[90px] px-4"></div>
-      {/* Filtro de búsqueda */}
+      <div className="mt-[90px] px-4"></div>
+
+      {/* Filtro */}
       <div className="max-w-4xl mx-auto mb-6">
         <input
           type="text"
@@ -283,19 +304,22 @@ doc.text(wrapped, boxX + 3, boxY + 7);
       {/* Lista de productos */}
       <div className="max-w-6xl mx-auto py-12 px-4 space-y-12">
         <h2 className="text-2xl font-semibold mb-4 text-center">📦 Muebles disponibles</h2>
+
         <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
           {Object.entries(groupedVariants)
             .filter(([_, group]) => group.name.toLowerCase().includes(filter.toLowerCase()))
             .map(([productId, group]) => {
               const productName = group.name;
-              const variants = group.variants;
-              const productImage = variants.find(v => v.image_path)?.image_path;
+              const groupVariants = group.variants || [];
+              const productImage = groupVariants.find(v => v.image_path)?.image_path;
+
               const selected = selectedOptions[productId] || {};
-              const selectedVariant = variants.find(
+              const selectedVariant = groupVariants.find(
                 v => v.color === selected.color && v.size === selected.size
               );
-              const availableColors = Array.from(new Set(variants.map(v => v.color)));
-              const availableSizes = Array.from(new Set(variants.map(v => v.size)));
+
+              const availableColors = Array.from(new Set(groupVariants.map(v => v.color)));
+              const availableSizes = Array.from(new Set(groupVariants.map(v => v.size)));
 
               return (
                 <div
@@ -309,6 +333,10 @@ doc.text(wrapped, boxX + 3, boxY + 7);
                         src={getImageUrl(productImage)}
                         alt="Producto"
                         className="w-full h-full object-cover rounded"
+                        onError={(e) => {
+                          // por si viene una ruta rara, evitamos el ícono roto
+                          e.currentTarget.style.display = 'none';
+                        }}
                       />
                     </div>
                   )}
@@ -318,19 +346,25 @@ doc.text(wrapped, boxX + 3, boxY + 7);
                     <div>
                       <h3 className="text-2xl font-bold">{productName}</h3>
                       <p className="text-gray-700 mb-2">
-                        <strong>Descripción: </strong>{variants[0].description}
+                        <strong>Descripción: </strong>{groupVariants[0]?.description}
                       </p>
 
                       <div className="mb-2">
                         <p className="font-medium">Colores:</p>
                         <div className="flex gap-3 flex-wrap">
                           {availableColors.map(color => {
-                            const colorHex = variants.find(v => v.color === color)?.colorHex;
+                            const colorHex = groupVariants.find(v => v.color === color)?.colorHex;
                             const isSelected = selected.color === color;
                             return (
-                              <div key={color} onClick={() => handleOptionChange(productId, 'color', color)} className="cursor-pointer">
+                              <div
+                                key={color}
+                                onClick={() => handleOptionChange(productId, 'color', color)}
+                                className="cursor-pointer"
+                              >
                                 <span
-                                  className={`block w-6 h-6 rounded border-2 ${isSelected ? 'ring-2 ring-blue-500' : 'border-gray-300'}`}
+                                  className={`block w-6 h-6 rounded border-2 ${
+                                    isSelected ? 'ring-2 ring-blue-500' : 'border-gray-300'
+                                  }`}
                                   style={{ backgroundColor: colorHex }}
                                   title={color}
                                 ></span>
@@ -341,23 +375,23 @@ doc.text(wrapped, boxX + 3, boxY + 7);
                         </div>
                       </div>
 
-                     <div className="mt-2 space-y-1">
-                      {availableSizes.map(size => (
-                        <label
-                          key={size}
-                          className="flex items-center space-x-2 text-sm"
-                        >
-                          <input
-                            type="radio"
-                            name={`size-${productId}`}
-                            value={size}
-                            checked={selected.size === size}
-                            onChange={() => handleOptionChange(productId, 'size', size)}
-                          />
-                          <span>{size}</span>
-                        </label>
-                      ))}
-                    </div>
+                      <div className="mt-2 space-y-1">
+                        {availableSizes.map(size => (
+                          <label
+                            key={size}
+                            className="flex items-center space-x-2 text-sm"
+                          >
+                            <input
+                              type="radio"
+                              name={`size-${productId}`}
+                              value={size}
+                              checked={selected.size === size}
+                              onChange={() => handleOptionChange(productId, 'size', size)}
+                            />
+                            <span>{size}</span>
+                          </label>
+                        ))}
+                      </div>
 
                       <p className="mt-2 font-semibold text-gray-800">
                         Precio: {selectedVariant ? `$${selectedVariant.price}` : '---'}
@@ -368,7 +402,6 @@ doc.text(wrapped, boxX + 3, boxY + 7);
                       onClick={() => handleAdd(productId)}
                       className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
-                      
                       Agregar
                     </button>
                   </div>
@@ -380,7 +413,7 @@ doc.text(wrapped, boxX + 3, boxY + 7);
         <ToastContainer position="bottom-right" autoClose={2000} />
       </div>
 
-      {/* Presupuesto */}
+      {/* Cliente */}
       <div className="max-w-4xl mx-auto mt-8 p-4 border rounded shadow">
         <h2 className="text-xl font-semibold mb-4 text-center">📇 Información del cliente</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -418,11 +451,13 @@ doc.text(wrapped, boxX + 3, boxY + 7);
             onChange={(e) => setClientNotes(e.target.value)}
             className="border p-2 rounded md:col-span-2 h-28 resize-none"
           />
-
         </div>
       </div>
+
+      {/* Presupuesto */}
       <div className="max-w-4xl mx-auto mt-10">
         <h2 className="text-2xl font-semibold mb-4 text-center">🧾 Presupuesto generado</h2>
+
         {estimateItems.length === 0 ? (
           <p className="text-center text-gray-500">No hay productos añadidos aún.</p>
         ) : (
@@ -474,6 +509,7 @@ doc.text(wrapped, boxX + 3, boxY + 7);
 
             <div className="mt-6 text-right">
               <h3 className="text-xl font-bold">Total: ${total.toFixed(2)}</h3>
+
               <button
                 onClick={() => {
                   dispatch(clearEstimate());
@@ -487,6 +523,7 @@ doc.text(wrapped, boxX + 3, boxY + 7);
               >
                 Limpiar
               </button>
+
               <button
                 onClick={() => {
                   if (!clientName || !clientAddress || !clientPhone) {
