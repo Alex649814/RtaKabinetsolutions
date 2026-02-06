@@ -185,86 +185,123 @@ const EstimateGeneratorAdmin = () => {
     doc.setFontSize(14);
     doc.text(`$${calculatedTotal.toFixed(2)}`, 168, 48);
 
-    const tableColumn = ["No.", "Description", "Quantity", "Unit Cost", "Amount"];
-    const tableRows = [];
+   // ✅ TABLA + TOTAL (footer) + manejo PRO de paginación para que NOTAS/FIRMA nunca se corten
+const tableColumn = ["No.", "Description", "Quantity", "Unit Cost", "Amount"];
+const tableRows = [];
 
-    items.forEach((item, index) => {
-      const subtotal = item.quantity * item.price;
-      tableRows.push([
-        (index + 1).toString(),
-        item.name,
-        item.quantity.toString(),
-        `$${parseFloat(item.price).toFixed(2)}`,
-        `$${subtotal.toFixed(2)}`
-      ]);
-    });
+items.forEach((item, index) => {
+  const subtotal = item.quantity * item.price;
+  tableRows.push([
+    (index + 1).toString(),
+    item.name,
+    item.quantity.toString(),
+    `$${parseFloat(item.price).toFixed(2)}`,
+    `$${subtotal.toFixed(2)}`
+  ]);
+});
 
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 70,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [240, 237, 237],
-        textColor: 0,
-        halign: 'center'
-      },
-      styles: { fontSize: 10 }
-    });
+autoTable(doc, {
+  startY: 70,
+  head: [tableColumn],
+  body: tableRows,
 
-    const headY = 70;
-    const rowHeight = 7.5;
-    const tableWidth = 182;
-    const tableX = 14;
+  // ✅ TOTAL como parte de la tabla (footer)
+  foot: [[
+    { content: 'Total', colSpan: 4, styles: { halign: 'right' } },
+    { content: `$${calculatedTotal.toFixed(2)}`, styles: { halign: 'right' } }
+  ]],
+  showFoot: 'lastPage',
 
-    doc.setDrawColor(184, 183, 183);
-    doc.setLineWidth(0.5);
-    doc.rect(tableX, headY, tableWidth, rowHeight);
+  theme: 'grid',
+  margin: { left: 14, right: 14, top: 20, bottom: 28 },
 
-    const finalY = doc.lastAutoTable.finalY;
+  styles: { fontSize: 10, cellPadding: 2 },
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
+  headStyles: {
+    fillColor: [240, 237, 237],
+    textColor: 0,
+    halign: 'center',
+    fontStyle: 'bold'
+  },
 
-    doc.setDrawColor(184, 183, 183);
-    doc.setFillColor(240, 237, 237);
-    doc.rect(158, finalY, 38, 10, 'FD');
-    doc.setTextColor(0);
-    doc.text(`   Total:         $${calculatedTotal.toFixed(2)}`, 158, finalY + 7);
+  footStyles: {
+    fillColor: [240, 237, 237],
+    textColor: 0,
+    fontStyle: 'bold'
+  },
 
-    // ✅ NOTAS (con default si no hay texto)
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(45, 55, 72);
-    doc.text("Client Information", 14, finalY + 20);
+  columnStyles: {
+    0: { halign: 'center', cellWidth: 10 }, // No.
+    1: { halign: 'left' },                  // Description
+    2: { halign: 'center', cellWidth: 22 }, // Quantity
+    3: { halign: 'right',  cellWidth: 28 }, // Unit Cost
+    4: { halign: 'right',  cellWidth: 28 }  // Amount
+  },
 
-    doc.setTextColor(0, 0, 0);
-    doc.setDrawColor(184, 183, 183);
-    doc.setLineWidth(0.4);
+  // ✅ Header en cada página (línea superior)
+  didDrawPage: () => {
+    doc.setDrawColor(100);
+    doc.setLineWidth(0.3);
+    doc.line(14, 28, 197, 28);
+  }
+});
 
-    const boxX = 14;
-    const boxY = finalY + 23;
-    const boxW = 126;
-    const boxH = 26;
+// ✅ Posición final real en la última página donde terminó la tabla
+let finalY = doc.lastAutoTable.finalY;
 
-    const defaultNotes =
-      "1. This estimate is valid for 30 days from the date issued.\n" +
-      "2. Any changes to the project scope may result in additional costs.";
+// ✅ Si notas/firma no caben, forzamos nueva página (PRO)
+const pdfpageHeight = doc.internal.pageSize.height;
+const footerLineY = pdfpageHeight - 22;
 
-    const notesText = (clientNotes || "").trim() ? clientNotes.trim() : defaultNotes;
+// espacio aproximado que ocupan: título + caja notas + firma + aire
+const neededSpace = 55;
 
-    const wrapWithNewlines = (text, width) =>
-      text
-        .split("\n")
-        .flatMap((line) => doc.splitTextToSize(line, width));
+if (finalY + neededSpace > footerLineY) {
+  doc.addPage();
+  finalY = 20; // arrancamos arriba en nueva página
+}
 
-    const wrapped = wrapWithNewlines(notesText, boxW - 6);
-    doc.text(wrapped, boxX + 3, boxY + 7);
+// =======================
+// ✅ NOTAS (debajo de la tabla, sin cortarse)
+// =======================
+doc.setFontSize(10);
+doc.setFont("helvetica", "normal");
+doc.setTextColor(45, 55, 72);
 
-    // Firma
-    doc.setDrawColor(0);
-    doc.rect(145, finalY + 20, 50, 25);
-    doc.text("Client", 165, finalY + 24);
+// Cambia el título si quieres: Notes / Conditions
+doc.text("Client Information", 14, finalY + 12);
+
+doc.setTextColor(0, 0, 0);
+doc.setDrawColor(184, 183, 183);
+doc.setLineWidth(0.4);
+
+const boxX = 14;
+const boxY = finalY + 15;
+const boxW = 126;
+const boxH = 26;
+
+// ✅ si quieres mantener el recuadro de notas, déjalo:
+doc.rect(boxX, boxY, boxW, boxH);
+
+const defaultNotes =
+  "1. This estimate is valid for 30 days from the date issued.\n" +
+  "2. Any changes to the project scope may result in additional costs.";
+
+const notesText = (clientNotes || "").trim() ? clientNotes.trim() : defaultNotes;
+
+const wrapWithNewlines = (text, width) =>
+  text.split("\n").flatMap((line) => doc.splitTextToSize(line, width));
+
+const wrapped = wrapWithNewlines(notesText, boxW - 6);
+doc.text(wrapped, boxX + 3, boxY + 7);
+
+// =======================
+// ✅ FIRMA (derecha)
+// =======================
+doc.setDrawColor(0);
+doc.rect(145, finalY + 12, 50, 29);
+doc.text("Client", 165, finalY + 17);
+
 
     const pageHeight = doc.internal.pageSize.height;
     doc.setDrawColor(100);
