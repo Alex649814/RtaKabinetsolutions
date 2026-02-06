@@ -253,6 +253,7 @@ doc.text(wrapped, boxX + 3, boxY + 7);
   const [clientPhone, setClientPhone] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [clientNotes, setClientNotes] = useState('');
+  
 
   const BACKEND_BASE =
   import.meta.env.DEV ? "http://localhost:5000" : window.location.origin;
