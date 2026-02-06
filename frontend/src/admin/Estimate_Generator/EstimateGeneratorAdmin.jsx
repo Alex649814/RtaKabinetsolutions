@@ -481,16 +481,7 @@ return (
     {/* =========================
         TOASTIFY (abajo derecha)
         ========================= */}
-    <ToastContainer
-      position="bottom-right"
-      autoClose={2000}
-      hideProgressBar
-      closeOnClick
-      pauseOnHover={false}
-      pauseOnFocusLoss={false}
-      draggable={false}
-      limit={3}
-    />
+    
 
     {/* =========================================================
         PANEL FLOTANTE PRO (arriba-derecha, no estorba con toasts)
