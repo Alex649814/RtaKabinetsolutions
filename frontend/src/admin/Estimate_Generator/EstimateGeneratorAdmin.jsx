@@ -12,7 +12,6 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { toAbsoluteUrl } from '../../lib/api';
 
 const EstimateGeneratorAdmin = () => {
   const dispatch = useDispatch();
@@ -193,13 +192,38 @@ const EstimateGeneratorAdmin = () => {
 
 
 
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(200, 0, 0);
-    doc.text("Client Information", 14, finalY + 20);
-    doc.setTextColor(0, 0, 0);
-    doc.text("1. This estimate is valid for 30 days from the date issued.", 14, finalY + 26);
-    doc.text("2. Any changes to the project scope may result in additional costs.", 14, finalY + 32);
+doc.setFontSize(10);
+doc.setFont("helvetica", "normal");
+doc.setTextColor(200, 0, 0);
+doc.text("Client Information", 14, finalY + 20);
+
+doc.setTextColor(0, 0, 0);
+doc.setDrawColor(184, 183, 183);
+doc.setLineWidth(0.4);
+
+// Caja para notas (no invade el cuadro de firma porque termina antes de x=145)
+const boxX = 14;
+const boxY = finalY + 23;
+const boxW = 126;   // llega aprox a x=140
+const boxH = 26;
+
+doc.rect(boxX, boxY, boxW, boxH);
+
+// Default notes si el cliente no escribió nada
+const defaultNotes =
+  "1. This estimate is valid for 30 days from the date issued.\n" +
+  "2. Any changes to the project scope may result in additional costs.";
+
+const notesText = (clientNotes || "").trim() ? clientNotes.trim() : defaultNotes;
+
+// Wrap respetando saltos de línea
+const wrapWithNewlines = (text, width) =>
+  text
+    .split("\n")
+    .flatMap((line) => doc.splitTextToSize(line, width));
+
+const wrapped = wrapWithNewlines(notesText, boxW - 6);
+doc.text(wrapped, boxX + 3, boxY + 7);
     
 
     doc.setDrawColor(0);
@@ -228,20 +252,21 @@ const EstimateGeneratorAdmin = () => {
   const [clientAddress, setClientAddress] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [clientEmail, setClientEmail] = useState('');
+  const [clientNotes, setClientNotes] = useState('');
 
   return (
     <>
-     {/* Filtro de búsqueda */}
-<div className="max-w-4xl mx-auto mt-16 mb-6 px-4">
-  <input
-    type="text"
-    placeholder="Buscar mueble por nombre..."
-    value={filter}
-    onChange={(e) => setFilter(e.target.value)}
-    className="w-full border border-gray-300 rounded px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-  />
-</div>
-
+    <div className="mt-[90px] px-4"></div>
+      {/* Filtro de búsqueda */}
+      <div className="max-w-4xl mx-auto mb-6">
+        <input
+          type="text"
+          placeholder="Buscar mueble por nombre..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="w-full border border-gray-300 rounded px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
 
       {/* Lista de productos */}
       <div className="max-w-6xl mx-auto py-12 px-4 space-y-12">
@@ -269,7 +294,7 @@ const EstimateGeneratorAdmin = () => {
                   {productImage && (
                     <div className="w-full md:w-1/2">
                       <img
-                        src={toAbsoluteUrl(productImage)}
+                        src={`http://localhost:5000${productImage}`}
                         alt="Producto"
                         className="w-full h-full object-cover rounded"
                       />
@@ -374,6 +399,13 @@ const EstimateGeneratorAdmin = () => {
             onChange={(e) => setClientEmail(e.target.value)}
             className="border p-2 rounded"
           />
+          <textarea
+            placeholder="Notas / condiciones (opcional)..."
+            value={clientNotes}
+            onChange={(e) => setClientNotes(e.target.value)}
+            className="border p-2 rounded md:col-span-2 h-28 resize-none"
+          />
+
         </div>
       </div>
       <div className="max-w-4xl mx-auto mt-10">
@@ -436,6 +468,7 @@ const EstimateGeneratorAdmin = () => {
                   setClientAddress('');
                   setClientPhone('');
                   setClientEmail('');
+                  setClientNotes('');
                 }}
                 className="mt-2 px-4 py-2 bg-gray-700 text-white rounded"
               >
