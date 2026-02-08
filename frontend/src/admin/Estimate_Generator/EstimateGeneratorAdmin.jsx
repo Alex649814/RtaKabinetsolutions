@@ -359,7 +359,7 @@ return (
     <div className="mt-[90px] px-4"></div>
 
     {/* Filtro */}
-    <div className="max-w-4xl mx-auto mb-6">
+    <div className="max-w-4xl mx-auto mb-6" style={gutterStyle}>
       <input
         type="text"
         placeholder="Buscar mueble por nombre..."
@@ -375,7 +375,9 @@ return (
       <div className="py-6 space-y-12">
         <h2 className="text-2xl font-semibold mb-4 text-center">📦 Muebles disponibles</h2>
 
-        <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
+        <div  className="flex flex-col gap-6 w-full max-w-4xl mx-auto"
+              style={gutterStyle}
+>
           {Object.entries(groupedVariants)
             .filter(([_, group]) => group.name.toLowerCase().includes(filter.toLowerCase()))
             .map(([productId, group]) => {
@@ -390,11 +392,15 @@ return (
 
               const availableColors = Array.from(new Set(groupVariants.map(v => v.color)));
               const availableSizes = Array.from(new Set(groupVariants.map(v => v.size)));
+              const PANEL_GUTTER = 460; // ancho del panel (≈420) + margen
+              const needsGutter = isPanelOpen && !isPanelMin;
+              const gutterStyle = needsGutter ? { paddingRight: PANEL_GUTTER } : undefined;
 
               return (
                 <div
                   key={productId}
                   className="flex flex-col md:flex-row border rounded-lg shadow p-4 gap-4"
+                  style={gutterStyle}   
                 >
                   {/* Imagen */}
                   {productImage && (
