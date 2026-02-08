@@ -352,9 +352,14 @@ doc.text("Client", 165, finalY + 17);
 
     doc.save("presupuesto.pdf");
   };
-const [isPanelOpen, setIsPanelOpen] = useState(false);
-const [isPanelMin, setIsPanelMin] = useState(true);
-return (
+
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isPanelMin, setIsPanelMin] = useState(true);
+  const PANEL_GUTTER = 460; // ancho del panel (≈420) + margen
+  const needsGutter = isPanelOpen && !isPanelMin;
+  const gutterStyle = needsGutter ? { paddingRight: PANEL_GUTTER } : undefined;
+
+  return (
   <>
     <div className="mt-[90px] px-4"></div>
 
@@ -392,9 +397,6 @@ return (
 
               const availableColors = Array.from(new Set(groupVariants.map(v => v.color)));
               const availableSizes = Array.from(new Set(groupVariants.map(v => v.size)));
-              const PANEL_GUTTER = 460; // ancho del panel (≈420) + margen
-              const needsGutter = isPanelOpen && !isPanelMin;
-              const gutterStyle = needsGutter ? { paddingRight: PANEL_GUTTER } : undefined;
 
               return (
                 <div
