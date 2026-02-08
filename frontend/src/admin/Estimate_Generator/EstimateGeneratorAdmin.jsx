@@ -358,51 +358,54 @@ doc.text("Client", 165, finalY + 17);
   const PANEL_GUTTER = 460; // ancho del panel (≈420) + margen
   const needsGutter = isPanelOpen && !isPanelMin;
   const gutterStyle = needsGutter ? { paddingRight: PANEL_GUTTER } : undefined;
+  const gutterClass = isPanelOpen && !isPanelMin ? 'lg:pr-[460px]' : '';
 
   return (
   <>
     <div className="mt-[90px] px-4"></div>
 
-    {/* Filtro */}
-    <div className="max-w-4xl mx-auto mb-6" style={gutterStyle}>
-      <input
-        type="text"
-        placeholder="Buscar mueble por nombre..."
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        className="w-full border border-gray-300 rounded px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+    {/* =======================
+        FILTRO (con gutter)
+    ======================= */}
+    <div className={`w-full ${gutterClass}`}>
+      <div className="max-w-4xl mx-auto mb-6">
+        <input
+          type="text"
+          placeholder="Buscar mueble por nombre..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="w-full border border-gray-300 rounded px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
     </div>
 
-    {/* ===== Layout principal: lista + (panel flotante tipo YouTube) ===== */}
-    <div className="max-w-6xl mx-auto pb-12 px-4">
-      {/* Lista de productos */}
-      <div className="py-6 space-y-12">
+    {/* =======================
+        LISTA DE PRODUCTOS (con gutter)
+    ======================= */}
+    <div className={`w-full ${gutterClass}`}>
+      <div className="max-w-6xl mx-auto py-12 px-4 space-y-12">
         <h2 className="text-2xl font-semibold mb-4 text-center">📦 Muebles disponibles</h2>
 
-        <div  className="flex flex-col gap-6 w-full max-w-4xl mx-auto"
-              style={gutterStyle}
->
+        <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto">
           {Object.entries(groupedVariants)
             .filter(([_, group]) => group.name.toLowerCase().includes(filter.toLowerCase()))
             .map(([productId, group]) => {
               const productName = group.name;
               const groupVariants = group.variants || [];
-              const productImage = groupVariants.find(v => v.image_path)?.image_path;
+              const productImage = groupVariants.find((v) => v.image_path)?.image_path;
 
               const selected = selectedOptions[productId] || {};
               const selectedVariant = groupVariants.find(
-                v => v.color === selected.color && v.size === selected.size
+                (v) => v.color === selected.color && v.size === selected.size
               );
 
-              const availableColors = Array.from(new Set(groupVariants.map(v => v.color)));
-              const availableSizes = Array.from(new Set(groupVariants.map(v => v.size)));
+              const availableColors = Array.from(new Set(groupVariants.map((v) => v.color)));
+              const availableSizes = Array.from(new Set(groupVariants.map((v) => v.size)));
 
               return (
                 <div
                   key={productId}
-                  className="flex flex-col md:flex-row border rounded-lg shadow p-4 gap-4"
-                  style={gutterStyle}   
+                  className="flex flex-col md:flex-row border rounded-lg shadow p-4 gap-4 bg-white"
                 >
                   {/* Imagen */}
                   {productImage && (
@@ -410,9 +413,9 @@ doc.text("Client", 165, finalY + 17);
                       <img
                         src={getImageUrl(productImage)}
                         alt="Producto"
-                        className="w-full h-full object-cover rounded"
+                        className="w-full h-auto md:h-full object-cover rounded"
                         onError={(e) => {
-                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.style.display = "none";
                         }}
                       />
                     </div>
@@ -423,28 +426,30 @@ doc.text("Client", 165, finalY + 17);
                     <div>
                       <h3 className="text-2xl font-bold">{productName}</h3>
                       <p className="text-gray-700 mb-2">
-                        <strong>Descripción: </strong>{groupVariants[0]?.description}
+                        <strong>Descripción: </strong>
+                        {groupVariants[0]?.description}
                       </p>
 
                       <div className="mb-2">
                         <p className="font-medium">Colores:</p>
                         <div className="flex gap-3 flex-wrap">
-                          {availableColors.map(color => {
-                            const colorHex = groupVariants.find(v => v.color === color)?.colorHex;
+                          {availableColors.map((color) => {
+                            const colorHex = groupVariants.find((v) => v.color === color)?.colorHex;
                             const isSelected = selected.color === color;
+
                             return (
                               <div
                                 key={color}
-                                onClick={() => handleOptionChange(productId, 'color', color)}
+                                onClick={() => handleOptionChange(productId, "color", color)}
                                 className="cursor-pointer"
                               >
                                 <span
                                   className={`block w-6 h-6 rounded border-2 ${
-                                    isSelected ? 'ring-2 ring-blue-500' : 'border-gray-300'
+                                    isSelected ? "ring-2 ring-blue-500" : "border-gray-300"
                                   }`}
                                   style={{ backgroundColor: colorHex }}
                                   title={color}
-                                ></span>
+                                />
                                 <span className="text-xs">{color}</span>
                               </div>
                             );
@@ -453,14 +458,14 @@ doc.text("Client", 165, finalY + 17);
                       </div>
 
                       <div className="mt-2 space-y-1">
-                        {availableSizes.map(size => (
+                        {availableSizes.map((size) => (
                           <label key={size} className="flex items-center space-x-2 text-sm">
                             <input
                               type="radio"
                               name={`size-${productId}`}
                               value={size}
                               checked={selected.size === size}
-                              onChange={() => handleOptionChange(productId, 'size', size)}
+                              onChange={() => handleOptionChange(productId, "size", size)}
                             />
                             <span>{size}</span>
                           </label>
@@ -468,7 +473,7 @@ doc.text("Client", 165, finalY + 17);
                       </div>
 
                       <p className="mt-2 font-semibold text-gray-800">
-                        Precio: {selectedVariant ? `$${selectedVariant.price}` : '---'}
+                        Precio: {selectedVariant ? `$${selectedVariant.price}` : "---"}
                       </p>
                     </div>
 
@@ -486,85 +491,63 @@ doc.text("Client", 165, finalY + 17);
       </div>
     </div>
 
-    {/* =========================
-        TOASTIFY (abajo derecha)
-        ========================= */}
-    
+    {/* =======================
+        PANEL FLOTANTE (Arriba-derecha)
+        - No estorba al toast (toast abajo-derecha)
+        - Incluye Info cliente + presupuesto
+    ======================= */}
 
-    {/* =========================================================
-        PANEL FLOTANTE PRO (arriba-derecha, no estorba con toasts)
-        - Minimizado: cuadrito tipo YouTube
-        - Expandido: sheet flotante con scroll interno
-        ========================================================= */}
-
-    {/* ✅ NOTA: necesitas estos estados arriba en tu componente:
-        const [isPanelOpen, setIsPanelOpen] = useState(false);
-        const [isPanelMin, setIsPanelMin] = useState(true);
-    */}
-
-    {/* Minimizado */}
-    {!isPanelOpen && estimateItems.length > 0 && (
+    {/* Botón para abrir si está cerrado */}
+    {!isPanelOpen && (
       <button
         onClick={() => {
           setIsPanelOpen(true);
           setIsPanelMin(false);
         }}
-        className="fixed top-24 right-4 z-[9999] w-[320px] max-w-[90vw] bg-white border shadow-lg rounded-xl p-3 flex items-center gap-3 hover:shadow-xl transition"
+        className="fixed top-24 right-6 z-[9999] bg-white border shadow-lg rounded-xl px-4 py-2 hover:bg-gray-50"
       >
-        <div className="flex-1 text-left">
-          <p className="font-semibold text-sm">🧾 Presupuesto</p>
-          <p className="text-xs text-gray-600">
-            {estimateItems.length} producto(s) •{' '}
-            {!clientName || !clientAddress || !clientPhone
-              ? 'Falta info del cliente'
-              : 'Listo para PDF'}{' '}
-            • Toca para abrir
-          </p>
-        </div>
-
-        <div className="text-right">
-          <p className="text-sm font-bold">${total.toFixed(2)}</p>
-        </div>
+        🧾 Ver presupuesto
       </button>
     )}
 
-    {/* Expandido */}
-    {isPanelOpen && (
-      <div
-        className={`fixed top-24 right-4 z-[9999] w-[420px] max-w-[92vw] bg-white border shadow-xl rounded-2xl overflow-hidden transition`}
-        style={{
-          height: isPanelMin ? 64 : 'min(78vh, 680px)'
-        }}
+    {/* Vista minimizada */}
+    {isPanelOpen && isPanelMin && (
+      <button
+        onClick={() => setIsPanelMin(false)}
+        className="fixed top-24 right-6 z-[9999] bg-white border shadow-lg rounded-xl px-4 py-2 hover:bg-gray-50 text-left"
+        title="Abrir presupuesto"
       >
+        <div className="font-semibold">🧾 Presupuesto</div>
+        <div className="text-sm text-gray-600">Total: ${total.toFixed(2)}</div>
+      </button>
+    )}
+
+    {/* Panel completo */}
+    {isPanelOpen && !isPanelMin && (
+      <div className="fixed top-24 right-6 z-[9999] w-[460px] max-w-[calc(100vw-1.5rem)] h-[calc(100vh-7rem)] bg-white border rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
           <div className="flex items-center gap-2">
             <span className="text-lg">🧾</span>
             <div>
-              <p className="font-semibold leading-tight">Presupuesto generado</p>
-              <p className="text-xs text-gray-600">
-                Total: <span className="font-bold">${total.toFixed(2)}</span>
-              </p>
+              <div className="font-semibold leading-tight">Presupuesto generado</div>
+              <div className="text-sm text-gray-600 leading-tight">
+                Total: ${total.toFixed(2)}
+              </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Minimizar */}
             <button
-              onClick={() => setIsPanelMin((v) => !v)}
-              className="px-3 py-1 border rounded text-sm hover:bg-gray-50"
+              onClick={() => setIsPanelMin(true)}
+              className="px-3 py-1.5 border rounded-lg hover:bg-gray-50"
               title="Minimizar"
             >
-              {isPanelMin ? 'Expandir' : 'Minimizar'}
+              Minimizar
             </button>
-
-            {/* Cerrar */}
             <button
-              onClick={() => {
-                setIsPanelOpen(false);
-                setIsPanelMin(true);
-              }}
-              className="px-3 py-1 border rounded text-sm hover:bg-gray-50"
+              onClick={() => setIsPanelOpen(false)}
+              className="px-3 py-1.5 border rounded-lg hover:bg-gray-50"
               title="Cerrar"
             >
               ✕
@@ -572,19 +555,23 @@ doc.text("Client", 165, finalY + 17);
           </div>
         </div>
 
-        {/* Body scroll */}
-        {!isPanelMin && (
-          <div className="p-4 overflow-auto flex-1 space-y-6" style={{ height: 'calc(100% - 140px)' }}>
-            {/* ===== Información del cliente dentro del panel ===== */}
-            <div className="border rounded-xl p-4 bg-white">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-base">📇 Información del cliente</h3>
-                <span className="text-xs text-gray-500">
+        {/* Body layout: scroll interno + footer fijo */}
+        <div className="h-[calc(100%-56px)] flex flex-col">
+          {/* Scroll interno */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Info cliente dentro del panel */}
+            <div className="border rounded-xl p-4">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2">
+                  <span>📇</span>
+                  <h3 className="font-semibold">Información del cliente</h3>
+                </div>
+                <div className="text-xs text-gray-500 text-right">
                   Requerido: nombre, dirección, teléfono
-                </span>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <input
                   type="text"
                   placeholder="Nombre del cliente"
@@ -617,97 +604,113 @@ doc.text("Client", 165, finalY + 17);
                   placeholder="Notas / condiciones (opcional)..."
                   value={clientNotes}
                   onChange={(e) => setClientNotes(e.target.value)}
-                  className="border p-2 rounded sm:col-span-2 h-24 resize-none"
+                  className="border p-2 rounded md:col-span-2 h-28 resize-none"
                 />
               </div>
             </div>
 
-            {/* ===== Lista de items dentro del panel ===== */}
-            {estimateItems.length === 0 ? (
-              <p className="text-center text-gray-500">No hay productos añadidos aún.</p>
-            ) : (
-              <div className="space-y-4">
-                {estimateItems.map((item) => (
-                  <div key={item.id} className="p-3 border rounded">
-                    <p className="font-semibold">{item.name}</p>
-                    <p className="text-sm text-gray-600">{item.description}</p>
+            {/* Items del presupuesto */}
+            <div className="border rounded-xl p-4">
+              <h3 className="font-semibold mb-3">🧾 Productos agregados</h3>
 
-                    <div className="flex items-center gap-3 mt-2 flex-wrap">
-                      <label className="text-sm">Cantidad:</label>
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          dispatch(updateQuantity({
-                            id: item.id,
-                            quantity: parseInt(e.target.value)
-                          }))
-                        }
-                        className="w-16 p-1 border rounded"
-                      />
+              {estimateItems.length === 0 ? (
+                <p className="text-gray-500 text-sm">No hay productos añadidos aún.</p>
+              ) : (
+                <div className="space-y-3">
+                  {estimateItems.map((item) => (
+                    <div key={item.id} className="border rounded-lg p-3">
+                      <p className="font-semibold">{item.name}</p>
+                      {!!item.description && (
+                        <p className="text-sm text-gray-600">{item.description}</p>
+                      )}
 
-                      <label className="text-sm">Precio:</label>
-                      <input
-                        type="number"
-                        value={item.price}
-                        onChange={(e) =>
-                          dispatch(updatePrice({
-                            id: item.id,
-                            price: parseFloat(e.target.value)
-                          }))
-                        }
-                        className="w-24 p-1 border rounded"
-                      />
+                      <div className="flex flex-wrap items-center gap-3 mt-2">
+                        <label className="text-sm">Cantidad:</label>
+                        <input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            dispatch(
+                              updateQuantity({
+                                id: item.id,
+                                quantity: parseInt(e.target.value || "0", 10),
+                              })
+                            )
+                          }
+                          className="w-20 p-1 border rounded"
+                        />
 
-                      <span className="ml-auto font-semibold">
-                        Subtotal: ${(item.quantity * item.price).toFixed(2)}
-                      </span>
+                        <label className="text-sm">Precio:</label>
+                        <input
+                          type="number"
+                          value={item.price}
+                          onChange={(e) =>
+                            dispatch(
+                              updatePrice({
+                                id: item.id,
+                                price: parseFloat(e.target.value || "0"),
+                              })
+                            )
+                          }
+                          className="w-28 p-1 border rounded"
+                        />
 
-                      <button
-                        onClick={() => dispatch(removeFromEstimate(item.id))}
-                        className="px-3 py-1 bg-red-500 text-white rounded"
-                      >
-                        Quitar
-                      </button>
+                        <span className="ml-auto font-semibold text-sm">
+                          Subtotal: ${(item.quantity * item.price).toFixed(2)}
+                        </span>
+
+                        <button
+                          onClick={() => dispatch(removeFromEstimate(item.id))}
+                          className="px-3 py-1 bg-red-500 text-white rounded"
+                        >
+                          Quitar
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        )}
 
-        {/* Footer fijo (siempre visible) */}
-        <div className="border-t bg-white p-4 flex items-center justify-between gap-3">
-          <button
-            onClick={() => {
-              dispatch(clearEstimate());
-              setClientName('');
-              setClientAddress('');
-              setClientPhone('');
-              setClientEmail('');
-              setClientNotes('');
-              toast.success('Presupuesto limpiado', { position: 'bottom-right' });
-            }}
-            className="px-4 py-2 bg-gray-700 text-white rounded"
-          >
-            Limpiar
-          </button>
+          {/* Footer fijo */}
+          <div className="border-t bg-white p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-lg font-bold">Total: ${total.toFixed(2)}</div>
 
-          <button
-            onClick={() => {
-              if (!clientName || !clientAddress || !clientPhone) {
-                toast.error("Por favor completa el nombre, dirección y teléfono del cliente.", {
-                  position: "bottom-right"
-                });
-                return;
-              }
-              generateEstimatePDF(estimateItems);
-            }}
-            className="px-4 py-2 bg-green-600 text-white rounded"
-          >
-            Descargar PDF
-          </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    dispatch(clearEstimate());
+                    setClientName("");
+                    setClientAddress("");
+                    setClientPhone("");
+                    setClientEmail("");
+                    setClientNotes("");
+                  }}
+                  className="px-5 py-2 bg-gray-700 text-white rounded-lg"
+                >
+                  Limpiar
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (!clientName || !clientAddress || !clientPhone) {
+                      toast.error(
+                        "Por favor completa el nombre, dirección y teléfono del cliente.",
+                        { position: "bottom-right" }
+                      );
+                      return;
+                    }
+                    generateEstimatePDF(estimateItems);
+                  }}
+                  className="px-5 py-2 bg-green-600 text-white rounded-lg"
+                >
+                  Descargar PDF
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     )}
