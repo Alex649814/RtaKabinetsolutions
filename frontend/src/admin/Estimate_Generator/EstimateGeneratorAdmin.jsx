@@ -734,14 +734,29 @@ const savePdfPro = async (doc, fileName) => {
                 </button>
 
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (!clientName || !clientAddress || !clientPhone) {
                       toast.error("Por favor completa el nombre, dirección y teléfono del cliente.", {
-                        position: "bottom-right"
+                        position: "bottom-right",
                       });
                       return;
                     }
 
+                    // ✅ Si existe el picker nativo (Chrome/Edge), usamos SOLO ese
+                    if (window.showSaveFilePicker) {
+                      try {
+                        setIsSavingPdf(true);
+                        await generateEstimatePDF(estimateItems, buildDefaultPdfName());
+                      } catch (err) {
+                        console.error(err);
+                        toast.error("No se pudo generar el PDF.", { position: "bottom-right" });
+                      } finally {
+                        setIsSavingPdf(false);
+                      }
+                      return;
+                    }
+
+                    // ✅ Si NO existe (Safari/Firefox), usamos tu modal bonito para el nombre
                     setPdfFileName(buildDefaultPdfName());
                     setShowSaveModal(true);
                   }}
