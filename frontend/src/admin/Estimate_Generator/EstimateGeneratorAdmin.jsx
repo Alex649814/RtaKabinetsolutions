@@ -351,6 +351,12 @@ doc.text("Client", 165, finalY + 17);
     });
 
     await savePdfPro(doc, fileName);
+    
+    toast.success(`PDF guardado correctamente 💾`, {
+    position: "bottom-right",
+    autoClose: 2000,
+});
+
   };
 
   const [isPanelOpen, setIsPanelOpen] = useState(false);
