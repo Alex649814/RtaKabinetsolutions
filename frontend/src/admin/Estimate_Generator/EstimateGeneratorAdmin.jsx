@@ -168,7 +168,7 @@ const EstimateGeneratorAdmin = () => {
   }, [isEstimateOpen]);
 
 
-  const generateEstimatePDF = (items) => {
+  const generateEstimatePDF = async (items, fileName) => {
     const doc = new jsPDF();
     const estimateNumber = "001";
     const date = new Date().toLocaleDateString();
@@ -350,7 +350,7 @@ doc.text("Client", 165, finalY + 17);
       url: "https://www.facebook.com/profile.php?id=61572527397285"
     });
 
-    doc.save("presupuesto.pdf");
+    await savePdfPro(doc, fileName);
   };
 
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -359,6 +359,46 @@ doc.text("Client", 165, finalY + 17);
   const needsGutter = isPanelOpen && !isPanelMin;
   const gutterStyle = needsGutter ? { paddingRight: PANEL_GUTTER } : undefined;
   const gutterClass = isPanelOpen && !isPanelMin ? 'lg:pr-[460px]' : '';
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [pdfFileName, setPdfFileName] = useState("");
+  const [isSavingPdf, setIsSavingPdf] = useState(false);
+  const buildDefaultPdfName = () => {
+    const base = clientName?.trim() ? clientName.trim() : "Client";
+    const date = new Date().toISOString().slice(0, 10); // 2026-02-06
+    return `Estimate-${base}-${date}.pdf`;
+  };
+
+  const normalizePdfName = (name) => {
+  const cleaned = (name || "").trim();
+  if (!cleaned) return "Estimate.pdf";
+  return cleaned.toLowerCase().endsWith(".pdf") ? cleaned : `${cleaned}.pdf`;
+};
+
+const savePdfPro = async (doc, fileName) => {
+  const finalName = normalizePdfName(fileName);
+
+  // ✅ File System Access API (Chrome/Edge)
+  if (window.showSaveFilePicker) {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: finalName,
+      types: [
+        {
+          description: "PDF Document",
+          accept: { "application/pdf": [".pdf"] }
+        }
+      ]
+    });
+
+    const writable = await handle.createWritable();
+    const blob = doc.output("blob");
+    await writable.write(blob);
+    await writable.close();
+    return;
+  }
+
+  // ✅ Fallback (Safari/Firefox): descarga normal
+  doc.save(finalName);
+};
 
   return (
   <>
@@ -696,14 +736,16 @@ doc.text("Client", 165, finalY + 17);
                 <button
                   onClick={() => {
                     if (!clientName || !clientAddress || !clientPhone) {
-                      toast.error(
-                        "Por favor completa el nombre, dirección y teléfono del cliente.",
-                        { position: "bottom-right" }
-                      );
+                      toast.error("Por favor completa el nombre, dirección y teléfono del cliente.", {
+                        position: "bottom-right"
+                      });
                       return;
                     }
-                    generateEstimatePDF(estimateItems);
+
+                    setPdfFileName(buildDefaultPdfName());
+                    setShowSaveModal(true);
                   }}
+
                   className="px-5 py-2 bg-green-600 text-white rounded-lg"
                 >
                   Descargar PDF
@@ -714,6 +756,91 @@ doc.text("Client", 165, finalY + 17);
         </div>
       </div>
     )}
+    {showSaveModal && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+    {/* overlay */}
+    <div
+      className="absolute inset-0 bg-black/40"
+      onClick={() => !isSavingPdf && setShowSaveModal(false)}
+    />
+
+    {/* card */}
+    <div className="relative w-[92%] max-w-md rounded-2xl bg-white shadow-xl p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Guardar PDF</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Escribe el nombre del archivo. El formato será <b>.pdf</b>.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => !isSavingPdf && setShowSaveModal(false)}
+          className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+          aria-label="Cerrar"
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="mt-4">
+        <label className="text-sm font-medium text-gray-700">Nombre del archivo</label>
+        <input
+          value={pdfFileName}
+          onChange={(e) => setPdfFileName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !isSavingPdf) {
+              e.preventDefault();
+              document.getElementById("btn-save-pdf")?.click();
+            }
+          }}
+          className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Ej: Estimate-JohnDoe-2026-02-06.pdf"
+          autoFocus
+        />
+
+        <div className="mt-2 text-xs text-gray-500">
+          Tip: Puedes poner solo el nombre, nosotros agregamos <b>.pdf</b> si falta.
+        </div>
+      </div>
+
+      <div className="mt-5 flex items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => setShowSaveModal(false)}
+          disabled={isSavingPdf}
+          className="rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
+        >
+          Cancelar
+        </button>
+
+        <button
+          id="btn-save-pdf"
+          type="button"
+          disabled={isSavingPdf}
+          onClick={async () => {
+            try {
+              setIsSavingPdf(true);
+              // 👉 Aquí generas el PDF y lo guardas con nombre personalizado
+              await generateEstimatePDF(estimateItems, pdfFileName); 
+              setShowSaveModal(false);
+            } catch (err) {
+              console.error(err);
+              toast.error("No se pudo generar el PDF.", { position: "bottom-right" });
+            } finally {
+              setIsSavingPdf(false);
+            }
+          }}
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+        >
+          {isSavingPdf ? "Guardando..." : "Guardar"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
   </>
 );
 
