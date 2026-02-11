@@ -364,7 +364,7 @@ doc.text("Client", 165, finalY + 17);
   const PANEL_GUTTER = 460; // ancho del panel (≈420) + margen
   const needsGutter = isPanelOpen && !isPanelMin;
   const gutterStyle = needsGutter ? { paddingRight: PANEL_GUTTER } : undefined;
-  const gutterClass = isPanelOpen && !isPanelMin ? 'lg:pr-[460px]' : '';
+  const gutterClass = isPanelOpen && !isPanelMin ? 'xl:pr-[460px]' : '';
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [pdfFileName, setPdfFileName] = useState("");
   const [isSavingPdf, setIsSavingPdf] = useState(false);
@@ -451,11 +451,11 @@ const savePdfPro = async (doc, fileName) => {
               return (
                 <div
                   key={productId}
-                  className="flex flex-col md:flex-row border rounded-lg shadow p-4 gap-4 bg-white"
+                  className="flex flex-col xl:flex-row border rounded-lg shadow p-4 gap-4 bg-white"
                 >
                   {/* Imagen */}
                   {productImage && (
-                    <div className="w-full md:w-1/2">
+                    <div className="w-full xl:w-1/2">
                       <img
                         src={getImageUrl(productImage)}
                         alt="Producto"
@@ -570,7 +570,12 @@ const savePdfPro = async (doc, fileName) => {
 
     {/* Panel completo */}
     {isPanelOpen && !isPanelMin && (
-      <div className="fixed top-24 right-6 z-[9999] w-[460px] max-w-[calc(100vw-1.5rem)] h-[calc(100vh-7rem)] bg-white border rounded-2xl shadow-2xl overflow-hidden">
+        <div className="
+          fixed top-20 sm:top-24 right-3 sm:right-6 z-[9999]
+          w-[calc(100vw-1.5rem)] sm:w-[420px] xl:w-[460px]
+          h-[calc(100vh-6rem)] sm:h-[calc(100vh-7rem)]
+          bg-white border rounded-2xl shadow-2xl overflow-hidden
+        ">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b bg-white">
           <div className="flex items-center gap-2">
@@ -617,7 +622,7 @@ const savePdfPro = async (doc, fileName) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
                 <input
                   type="text"
                   placeholder="Nombre del cliente"
@@ -650,7 +655,7 @@ const savePdfPro = async (doc, fileName) => {
                   placeholder="Notas / condiciones (opcional)..."
                   value={clientNotes}
                   onChange={(e) => setClientNotes(e.target.value)}
-                  className="border p-2 rounded md:col-span-2 h-28 resize-none"
+                  className="border p-2 rounded xl:col-span-2 h-28 resize-none"
                 />
               </div>
             </div>
