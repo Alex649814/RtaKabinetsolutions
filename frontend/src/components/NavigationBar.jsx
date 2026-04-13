@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import TopBar from './TopBar';
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/logo.png';
 
 const NavigationBar = () => {
   const [open, setOpen] = useState(false);
@@ -58,10 +59,11 @@ const NavigationBar = () => {
         >
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <img className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight mr-6" 
-              src="/src/assets/logo.png.png" 
-              alt="Logo Rta Kabinets Solutions"/
-              >
+              <img 
+                src={logo}
+                alt="Logo Rta Kabinets Solutions"
+                className="h-14 sm:h-16 w-auto mr-6 object-contain"
+              />
               
             </Link>
           </div>
