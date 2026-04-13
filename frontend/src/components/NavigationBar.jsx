@@ -62,7 +62,7 @@ const NavigationBar = () => {
               <img 
                 src={logo}
                 alt="Logo Rta Kabinets Solutions"
-                className="h-14 sm:h-16 w-auto mr-6 object-contain"
+                className="h-20 sm:h-24 w-auto mr-6 object-contain"
               />
               
             </Link>
