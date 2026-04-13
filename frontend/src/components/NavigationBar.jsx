@@ -62,7 +62,7 @@ const NavigationBar = () => {
               <img 
                 src={logo}
                 alt="Logo Rta Kabinets Solutions"
-                className="h-16 sm:h-24 w-auto mr-6 object-contain"
+                className="h-14 sm:h-16 w-auto mr-8 object-contain"
               />
               
             </Link>
@@ -76,7 +76,7 @@ const NavigationBar = () => {
             ☰
           </button>
 
-          <ul className="hidden md:flex space-x-12 text-gray-800 font-medium items-center">
+          <ul className="hidden md:flex space-x-8 text-gray-800 font-medium items-center">
             <li><Link to="/" className="hover:text-green-600 transition">Home</Link></li>
             <li><Link to="/about" className="hover:text-green-600 transition">About us</Link></li>
             <li><Link to="/gallery" className="hover:text-green-600 transition">Gallery</Link></li>
