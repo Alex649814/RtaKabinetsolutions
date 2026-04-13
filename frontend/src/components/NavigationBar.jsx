@@ -59,7 +59,7 @@ const NavigationBar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
               <img className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight mr-6" 
-              src="./assets/logo.png" 
+              src="/src/assets/logo.png.png" 
               alt="Logo Rta Kabinets Solutions"/
               >
               
