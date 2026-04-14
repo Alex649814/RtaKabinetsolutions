@@ -12,6 +12,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import logo from '../../assets/logo.png';
 
 const EstimateGeneratorAdmin = () => {
   const dispatch = useDispatch();
@@ -167,20 +168,45 @@ const EstimateGeneratorAdmin = () => {
     };
   }, [isEstimateOpen]);
 
+  const getImageBase64 = (imgUrl) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = imgUrl;
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+
+      resolve(canvas.toDataURL("image/png"));
+    };
+
+    img.onerror = reject;
+  });
+};
+
 
   const generateEstimatePDF = async (items, fileName) => {
     const doc = new jsPDF();
     const estimateNumber = "001";
     const date = new Date().toLocaleDateString();
     const calculatedTotal = items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
-
+    
     doc.setFontSize(16);
     doc.setFont("times", "normal");
     doc.text("CUSTOM CARPENTRY / RTA KABINETS", 15, 20);
-    doc.setFontSize(14);
-    doc.setFont("times", "italic");
-    doc.text("Carpentry", 190, 15, { align: "right" });
-    doc.text("Estimate", 190, 22, { align: "right" });
+    const logoBase64 = await getImageBase64(logo);
+
+    doc.addImage(logoBase64,"PNG",
+      150, // posición izquierda-derecha
+      5,   // posición arriba-abajo
+      45,  // ancho
+      25   // alto
+    );
 
     doc.setDrawColor(100);
     doc.setLineWidth(0.3);
