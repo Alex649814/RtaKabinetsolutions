@@ -202,8 +202,8 @@ const EstimateGeneratorAdmin = () => {
     const logoBase64 = await getImageBase64(logo);
 
     doc.addImage(logoBase64,"PNG",
-      155, // posición izquierda-derecha
-      10,   // posición arriba-abajo
+      150, // posición izquierda-derecha
+      5,   // posición arriba-abajo
       30,  // ancho
       30   // alto
     );
