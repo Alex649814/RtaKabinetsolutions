@@ -12,7 +12,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import logo from '../../assets/logo.png';
+import logo from '../../assets/logo.png.png';
 
 const EstimateGeneratorAdmin = () => {
   const dispatch = useDispatch();
