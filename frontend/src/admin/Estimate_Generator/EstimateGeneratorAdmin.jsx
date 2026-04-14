@@ -176,7 +176,7 @@ const EstimateGeneratorAdmin = () => {
 
     doc.setFontSize(16);
     doc.setFont("times", "normal");
-    doc.text("RTA KABINETS", 15, 20);
+    doc.text("CUSTOM CARPENTRY/RTA KABINETS", 15, 20);
     doc.setFontSize(14);
     doc.setFont("times", "italic");
     doc.text("Carpentry", 190, 15, { align: "right" });
