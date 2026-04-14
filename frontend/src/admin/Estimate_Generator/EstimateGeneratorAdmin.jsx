@@ -204,7 +204,7 @@ const EstimateGeneratorAdmin = () => {
     doc.addImage(logoBase64,"PNG",
       150, // posición izquierda-derecha
       5,   // posición arriba-abajo
-      45,  // ancho
+      35,  // ancho
       25   // alto
     );
 
